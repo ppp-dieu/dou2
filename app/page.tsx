@@ -13,11 +13,10 @@ export default function Home() {
   const swiperRef = useRef<SwiperType | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   return (
-    <div className="flex h-dvh flex-col bg-transparent"
-    >
+    <div className="grid h-dvh grid-rows-20 bg-transparent">
 
 <Swiper
-   className="min-h-0 flex-1 w-full overflow-hidden"
+    className="col-start-1 row-start-1 row-end-21 min-h-0 w-full overflow-hidden"
     slidesPerView={1}
     spaceBetween={0}
     onSwiper={(swiper) => {
@@ -39,7 +38,7 @@ onSlideChange={(swiper) => {
       <OnboardingStep3 />
     </SwiperSlide>
    </Swiper>
-<div className="relative z-50 shrink-0 px-6 py-2 pb-[max(2rem,env(safe-area-inset-bottom))]">
+<div className="relative z-50 col-start-1 row-start-17 row-end-19 px-6">
   <button
     onClick={() => {
       if (activeIndex === 2){

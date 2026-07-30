@@ -2,15 +2,14 @@ import Image from "next/image";
 
 export default function OnboardingStep3() {
   return (
-    <main className="flex h-full flex-col items-center px-8">
-      <div className="h-[10dvh] shrink-0" />
-      <div className="text-center">
+    <main className="grid h-full grid-rows-20 px-8">
+      <div className="row-start-2 text-center">
         <p className="text-[16px] text-[#1B3230]">使い方</p>
       </div>
 
-      <div className="flex h-full w-full max-w-sm flex-col justify-center gap-[3dvh]">
+      <div className="row-start-4 row-end-16 grid min-h-0 w-full max-w-sm grid-rows-3 gap-[3dvh] justify-self-center">
         {/* Step1 */}
-        <div className="h-[16dvh] min-h-[120px] max-h-[150px] rounded-[10px] border border-gray-300 bg-white px-3 py-3">
+        <div className="h-full min-h-0 rounded-[10px] border border-gray-300 bg-white px-3 py-3">
           <div className="flex h-full items-center justify-between">
             <div>
               <p className="text-[20px] font-bold text-[#FF9C85]">
@@ -39,7 +38,8 @@ export default function OnboardingStep3() {
         </div>
 
         {/* Step2 */}
-        <div className="h-[16dvh] min-h-[120px] max-h-[150px] rounded-[10px] border border-gray-300 bg-white px-3 py-3">
+        <div className="h-full min-h-0 rounded-[10px] border border-gray-300 bg-white px-3 py-3">
+          
           <div className="flex h-full items-center justify-between">
             <div>
               <p className="text-[20px] font-bold text-[#FF9C85]">
@@ -68,7 +68,7 @@ export default function OnboardingStep3() {
         </div>
 
         {/* Step3 */}
-        <div className="h-[16dvh] min-h-[120px] max-h-[150px] rounded-[10px] border border-gray-300 bg-white px-3 py-3">
+        <div className="h-full min-h-0 rounded-[10px] border border-gray-300 bg-white px-3 py-3">
           <div className="flex h-full items-center justify-between">
             <div>
               <p className="text-[20px] font-bold text-[#FF9C85]">
