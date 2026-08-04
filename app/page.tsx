@@ -31,24 +31,22 @@ export default function Home() {
         if (profile) {
           setLineUserId(profile.userId);
           const { data, error } = await supabase
-  .from("users")
-  .select("*")
-  .eq("line_user_id", profile.userId)
-  .maybeSingle();
+            .from("users")
+            .select("*")
+            .eq("line_user_id", profile.userId)
+            .maybeSingle();
 
-if (error) {
-  throw error;
-}
+          if (error) {
+            throw error;
+          }
 
-setUserExists(data !== null);
+          setUserExists(data !== null);
         }
       } catch (error) {
-        console.error("LIFF initialization failed:", error);
+  console.error("Error:", error);
 
-        setLiffError(
-          error instanceof Error ? error.message : "不明なエラー"
-        );
-      }
+  setLiffError(JSON.stringify(error));
+}
     };
 
     init();
@@ -57,24 +55,24 @@ setUserExists(data !== null);
   return (
     <div className="grid h-dvh grid-rows-20 bg-transparent">
       <div className="fixed left-2 top-2 z-[9999] rounded bg-white p-2 text-xs text-black">
-  {liffError ? (
-    <div>エラー: {liffError}</div>
-  ) : (
-    <>
-      <div>
-        LINE User ID: {lineUserId ?? "取得中"}
+        {liffError ? (
+          <div>エラー: {liffError}</div>
+        ) : (
+          <>
+            <div>
+              LINE User ID: {lineUserId ?? "取得中"}
+            </div>
+            <div>
+              User Exists:{" "}
+              {userExists === null
+                ? "確認中"
+                : userExists
+                  ? "true"
+                  : "false"}
+            </div>
+          </>
+        )}
       </div>
-      <div>
-        User Exists:{" "}
-        {userExists === null
-          ? "確認中"
-          : userExists
-            ? "true"
-            : "false"}
-      </div>
-    </>
-  )}
-</div>
 
       <Swiper
         className="col-start-1 row-start-1 row-end-21 min-h-0 w-full overflow-hidden"
