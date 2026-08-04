@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getLiffProfile, initializeLiff } from "@/lib/liff";
+import { supabase } from "@/lib/supabase";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Swiper as SwiperType } from "swiper";
 import "swiper/css";
@@ -18,6 +19,7 @@ export default function Home() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [lineUserId, setLineUserId] = useState<string | null>(null);
   const [liffError, setLiffError] = useState<string | null>(null);
+  const [userExists, setUserExists] = useState<boolean | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -28,6 +30,17 @@ export default function Home() {
 
         if (profile) {
           setLineUserId(profile.userId);
+          const { data, error } = await supabase
+  .from("users")
+  .select("*")
+  .eq("line_user_id", profile.userId)
+  .maybeSingle();
+
+if (error) {
+  throw error;
+}
+
+setUserExists(data !== null);
         }
       } catch (error) {
         console.error("LIFF initialization failed:", error);
@@ -43,13 +56,25 @@ export default function Home() {
 
   return (
     <div className="grid h-dvh grid-rows-20 bg-transparent">
-      <div className="fixed left-2 top-2 z-[9999] bg-white p-2 text-xs text-black">
-        {liffError
-          ? `エラー: ${liffError}`
-          : lineUserId
-            ? `LINE User ID: ${lineUserId}`
-            : "LIFF確認中"}
+      <div className="fixed left-2 top-2 z-[9999] rounded bg-white p-2 text-xs text-black">
+  {liffError ? (
+    <div>エラー: {liffError}</div>
+  ) : (
+    <>
+      <div>
+        LINE User ID: {lineUserId ?? "取得中"}
       </div>
+      <div>
+        User Exists:{" "}
+        {userExists === null
+          ? "確認中"
+          : userExists
+            ? "true"
+            : "false"}
+      </div>
+    </>
+  )}
+</div>
 
       <Swiper
         className="col-start-1 row-start-1 row-end-21 min-h-0 w-full overflow-hidden"
