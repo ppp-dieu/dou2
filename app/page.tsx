@@ -40,7 +40,24 @@ export default function Home() {
             throw error;
           }
 
-          setUserExists(data !== null);
+          if (data) {
+  setUserExists(true);
+} else {
+  const { error: insertError } = await supabase
+    .from("users")
+    .insert({
+      line_user_id: profile.userId,
+      picture_url: profile.pictureUrl ?? null,
+      registration_completed: false,
+      first_accessed_at: new Date().toISOString(),
+    });
+
+  if (insertError) {
+    throw insertError;
+  }
+
+  setUserExists(true);
+}
         }
       } catch (error) {
   console.error("Error:", error);
