@@ -54,17 +54,17 @@ export default function RegisterStep1({
     value={name}
     onChange={(event) => onNameChange(limitName(event.target.value))}
     placeholder="名前を入力（10文字以内）"
-    className="h-10 w-full rounded-md border border-gray-500 bg-white px-4 text-base text-[#2F4544] outline-none placeholder:text-[#B8B8B8] focus:border-[#49B8B1]"
+    className="mx-auto block h-10 w-full max-w-sm rounded-md border border-gray-500 bg-white px-4 text-base text-[#2F4544] outline-none placeholder:text-[#B8B8B8] focus:border-[#49B8B1]"
   />
 </section>
       
       {/* Footer */}
-<footer className="flex h-[22dvh] shrink-0 items-start px-8">
+<footer className="flex h-[22dvh] shrink-0 items-start px-6">
   <button
     type="button"
     onClick={onNext}
     disabled={!isNameValid}
-    className="h-12 w-full rounded-full bg-[#49B8B1] text-base font-medium text-white transition-opacity active:opacity-80 disabled:opacity-40 disabled:active:opacity-40"
+    className="mx-auto block h-12 w-full max-w-sm rounded-full bg-[#49B8B1] text-base font-medium text-white transition-opacity active:opacity-80 disabled:opacity-40 disabled:active:opacity-40"
   >
     次へ
   </button>
