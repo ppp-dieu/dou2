@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { getLiffProfile, initializeLiff } from "@/lib/liff";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Swiper as SwiperType } from "swiper";
 import "swiper/css";
@@ -13,9 +14,42 @@ import OnboardingStep3 from "./components/OnboardingStep3";
 export default function Home() {
   const router = useRouter();
   const swiperRef = useRef<SwiperType | null>(null);
+
   const [activeIndex, setActiveIndex] = useState(0);
+  const [lineUserId, setLineUserId] = useState<string | null>(null);
+  const [liffError, setLiffError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        await initializeLiff();
+
+        const profile = await getLiffProfile();
+
+        if (profile) {
+          setLineUserId(profile.userId);
+        }
+      } catch (error) {
+        console.error("LIFF initialization failed:", error);
+
+        setLiffError(
+          error instanceof Error ? error.message : "不明なエラー"
+        );
+      }
+    };
+
+    init();
+  }, []);
+
   return (
     <div className="grid h-dvh grid-rows-20 bg-transparent">
+      <div className="fixed left-2 top-2 z-[9999] bg-white p-2 text-xs text-black">
+        {liffError
+          ? `エラー: ${liffError}`
+          : lineUserId
+            ? `LINE User ID: ${lineUserId}`
+            : "LIFF確認中"}
+      </div>
 
       <Swiper
         className="col-start-1 row-start-1 row-end-21 min-h-0 w-full overflow-hidden"
