@@ -41,29 +41,35 @@ export default function Home() {
           }
 
           if (data) {
-  setUserExists(true);
-} else {
-  const { error: insertError } = await supabase
-    .from("users")
-    .insert({
+            setUserExists(true);
+          } else {
+           const { error: insertError } = await supabase
+  .from("users")
+  .upsert(
+    {
       line_user_id: profile.userId,
       picture_url: profile.pictureUrl ?? null,
       registration_completed: false,
       first_accessed_at: new Date().toISOString(),
-    });
+    },
+    {
+      onConflict: "line_user_id",
+      ignoreDuplicates: true,
+    }
+  );
 
-  if (insertError) {
-    throw insertError;
-  }
+            if (insertError) {
+              throw insertError;
+            }
 
-  setUserExists(true);
-}
+            setUserExists(true);
+          }
         }
       } catch (error) {
-  console.error("Error:", error);
+        console.error("Error:", error);
 
-  setLiffError(JSON.stringify(error));
-}
+        setLiffError(JSON.stringify(error));
+      }
     };
 
     init();
