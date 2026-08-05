@@ -1,5 +1,7 @@
 "use client";
 
+import { initializeLiff, getLiffProfile } from "@/lib/liff";
+import { supabase } from "@/lib/supabase";
 import { useState } from "react";
 import RegisterStep1 from "./components/RegisterStep1";
 import RegisterStep2 from "./components/RegisterStep2";
@@ -10,7 +12,33 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [relationship, setRelationship] = useState("");
   const [livingStatus, setLivingStatus] = useState("");
+const handleComplete = async () => {
+  await initializeLiff();
 
+  const profile = await getLiffProfile();
+
+  if (!profile) {
+    return;
+  }
+
+  const { error } = await supabase
+    .from("users")
+    .update({
+      display_name: name,
+      relationship_type: relationship,
+      living_type: livingStatus,
+      registration_completed: true,
+      registered_at: new Date().toISOString(),
+    })
+    .eq("line_user_id", profile.userId);
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  setStep("complete");
+};
   if (step === 1) {
     return (
       <RegisterStep1
@@ -29,7 +57,7 @@ export default function RegisterPage() {
         livingStatus={livingStatus}
         onLivingStatusChange={setLivingStatus}
         onBack={() => setStep(1)}
-        onComplete={() => setStep("complete")}
+        onComplete={handleComplete}
       />
     );
   }

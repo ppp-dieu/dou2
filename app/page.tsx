@@ -41,22 +41,27 @@ export default function Home() {
           }
 
           if (data) {
-            setUserExists(true);
-          } else {
-           const { error: insertError } = await supabase
-  .from("users")
-  .upsert(
-    {
-      line_user_id: profile.userId,
-      picture_url: profile.pictureUrl ?? null,
-      registration_completed: false,
-      first_accessed_at: new Date().toISOString(),
-    },
-    {
-      onConflict: "line_user_id",
-      ignoreDuplicates: true,
-    }
-  );
+  setUserExists(true);
+
+  if (data.registration_completed) {
+    router.replace("/home");
+    return;
+  }
+} else {
+            const { error: insertError } = await supabase
+              .from("users")
+              .upsert(
+                {
+                  line_user_id: profile.userId,
+                  picture_url: profile.pictureUrl ?? null,
+                  registration_completed: false,
+                  first_accessed_at: new Date().toISOString(),
+                },
+                {
+                  onConflict: "line_user_id",
+                  ignoreDuplicates: true,
+                }
+              );
 
             if (insertError) {
               throw insertError;
