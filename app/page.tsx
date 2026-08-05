@@ -17,7 +17,6 @@ export default function Home() {
   const swiperRef = useRef<SwiperType | null>(null);
 
   const [activeIndex, setActiveIndex] = useState(0);
-  const [lineUserId, setLineUserId] = useState<string | null>(null);
   const [liffError, setLiffError] = useState<string | null>(null);
   const [userExists, setUserExists] = useState<boolean | null>(null);
 
@@ -29,7 +28,6 @@ export default function Home() {
         const profile = await getLiffProfile();
 
         if (profile) {
-          setLineUserId(profile.userId);
           const { data, error } = await supabase
             .from("users")
             .select("*")
@@ -41,13 +39,13 @@ export default function Home() {
           }
 
           if (data) {
-  if (data.registration_completed) {
-    router.replace("/home");
-    return;
-  }
+            if (data.registration_completed) {
+              router.replace("/home");
+              return;
+            }
 
-  setUserExists(true);
-} else {
+            setUserExists(true);
+          } else {
             const { error: insertError } = await supabase
               .from("users")
               .upsert(
@@ -78,33 +76,13 @@ export default function Home() {
     };
 
     init();
-  }, []);
+  }, [router]);
   if (userExists === null && !liffError) {
-  return <main className="h-dvh bg-white" />;
-}
+    return <main className="h-dvh bg-white" />;
+  }
 
   return (
-    <div className="grid h-dvh grid-rows-20 bg-transparent">
-      <div className="fixed left-2 top-2 z-[9999] rounded bg-white p-2 text-xs text-black">
-        {liffError ? (
-          <div>エラー: {liffError}</div>
-        ) : (
-          <>
-            <div>
-              LINE User ID: {lineUserId ?? "取得中"}
-            </div>
-            <div>
-              User Exists:{" "}
-              {userExists === null
-                ? "確認中"
-                : userExists
-                  ? "true"
-                  : "false"}
-            </div>
-          </>
-        )}
-      </div>
-
+    <div className="grid h-dvh grid-rows-20 bg-transparent">    
       <Swiper
         className="col-start-1 row-start-1 row-end-21 min-h-0 w-full overflow-hidden"
         slidesPerView={1}
