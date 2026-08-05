@@ -133,11 +133,11 @@ export default function PartnerPage() {
 
   return (
     <main className="mx-auto grid h-dvh w-full max-w-[430px] grid-rows-20 px-6">
-      <section className="row-start-2 row-end-5 flex flex-col items-center justify-center">
+      <section className="row-start-2 row-end-4 flex flex-col items-center justify-center">
         <h1 className="text-[18px] text-[#1B3230]">パートナー連携</h1>
       </section>
 
-      <section className="row-start-5 row-end-11 flex flex-col justify-center">
+      <section className="row-start-4 row-end-11 flex flex-col justify-center">
         <p className="mb-1 text-[13px] font-medium text-[#2F5955]">
           コードを共有する
         </p>
