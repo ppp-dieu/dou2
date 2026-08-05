@@ -147,7 +147,7 @@ export default function PartnerPage() {
             {inviteCode ?? "---- ----"}
           </p>
 
-          {codeError && (
+          
             <p
               className={`mt-2 h-4 text-center text-[12px] ${codeError ? "text-red-500" : "invisible"
                 }`}
@@ -155,7 +155,7 @@ export default function PartnerPage() {
             >
               {codeError ? "コードを取得できませんでした" : "\u00A0"}
             </p>
-          )}
+          
 
           <div className="mt-4 grid grid-cols-2 gap-4">
             <button
@@ -208,13 +208,12 @@ export default function PartnerPage() {
           </div>
 
           <p
-  className={`mt-3 h-5 text-center text-[13px] text-[#2F5955] ${
-    joinMessage ? "" : "invisible"
-  }`}
-  role="status"
->
-  {joinMessage ?? "\u00A0"}
-</p>
+            className={`mt-3 h-5 text-center text-[13px] text-[#2F5955] ${joinMessage ? "" : "invisible"
+              }`}
+            role="status"
+          >
+            {joinMessage ?? "\u00A0"}
+          </p>
         </div>
       </section>
     </main>
