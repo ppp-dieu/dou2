@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 
 export default function HomeInitial() {
+  const router = useRouter();
   const [consultation, setConsultation] = useState("");
   const [isAlertVisible, setIsAlertVisible] = useState(false);
   const placeholders = [
@@ -47,6 +49,7 @@ export default function HomeInitial() {
   <div className="h-full w-full max-w-sm">
     <button
       type="button"
+      onClick={() => router.push("/partner")}
       style={{
         transform: isAlertVisible
           ? "translateY(0)"
