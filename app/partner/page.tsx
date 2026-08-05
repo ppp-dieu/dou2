@@ -148,8 +148,12 @@ export default function PartnerPage() {
           </p>
 
           {codeError && (
-            <p className="mt-2 text-center text-[12px] text-red-500">
-              コードを取得できませんでした
+            <p
+              className={`mt-2 h-4 text-center text-[12px] ${codeError ? "text-red-500" : "invisible"
+                }`}
+              role="status"
+            >
+              {codeError ? "コードを取得できませんでした" : "\u00A0"}
             </p>
           )}
 
@@ -203,11 +207,14 @@ export default function PartnerPage() {
             </button>
           </div>
 
-          {joinMessage && (
-            <p className="mt-3 text-center text-[13px] text-[#2F5955]" role="status">
-              {joinMessage}
-            </p>
-          )}
+          <p
+  className={`mt-3 h-5 text-center text-[13px] text-[#2F5955] ${
+    joinMessage ? "" : "invisible"
+  }`}
+  role="status"
+>
+  {joinMessage ?? "\u00A0"}
+</p>
         </div>
       </section>
     </main>
