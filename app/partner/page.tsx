@@ -182,7 +182,7 @@ export default function PartnerPage() {
           ) : couple?.status === "pending" && couple.invite_code ? (
             <section>
               <p className="mb-1 text-[13px] font-medium text-[#2F5955]">
-                このコードをパートナーに共有してください
+                コードを共有する
               </p>
               <div className="rounded-[24px] bg-white px-5 py-5 shadow-[0_5px_10px_rgba(47,89,85,0.12)]">
                 <p className="text-center text-[24px] font-bold tracking-[0.08em] text-[#2F5955]">
@@ -225,7 +225,7 @@ export default function PartnerPage() {
           {!couple && (
             <section>
               <p className="mb-1 text-[13px] font-medium text-[#2F5955]">
-                受け取ったコードを入力する
+                コードを入力する
               </p>
               <div className="rounded-[24px] bg-white px-5 py-5 shadow-[0_10px_10px_rgba(47,89,85,0.12)]">
                 <input
