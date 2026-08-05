@@ -41,12 +41,12 @@ export default function Home() {
           }
 
           if (data) {
-  setUserExists(true);
-
   if (data.registration_completed) {
     router.replace("/home");
     return;
   }
+
+  setUserExists(true);
 } else {
             const { error: insertError } = await supabase
               .from("users")
@@ -79,6 +79,9 @@ export default function Home() {
 
     init();
   }, []);
+  if (userExists === null && !liffError) {
+  return <main className="h-dvh bg-white" />;
+}
 
   return (
     <div className="grid h-dvh grid-rows-20 bg-transparent">
