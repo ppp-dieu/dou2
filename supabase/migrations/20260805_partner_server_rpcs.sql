@@ -151,11 +151,23 @@ begin
   if exists (
     select 1
     from public.couples as c
-    where c.status in ('pending', 'connected')
+    where c.status = 'connected'
       and (c.member_a_id = actor_user_id or c.member_b_id = actor_user_id)
   ) then
-    raise exception 'すでに有効な連携または招待があります';
+    raise exception 'すでにパートナーと連携しています';
   end if;
+
+  update public.couples as c
+  set
+    status = 'ended',
+    invite_code = null,
+    invite_code_expires_at = null,
+    invite_code_issued_by = null,
+    ended_at = connection_time,
+    updated_at = connection_time
+  where c.status = 'pending'
+    and c.member_a_id = actor_user_id
+    and c.id <> target_couple_id;
 
   update public.couples as c
   set
