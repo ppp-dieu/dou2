@@ -21,16 +21,21 @@ const handleComplete = async () => {
     return;
   }
 
-  const { error } = await supabase
-    .from("users")
-    .update({
-      display_name: name,
-      relationship_type: relationship,
-      living_type: livingStatus,
-      registration_completed: true,
-      registered_at: new Date().toISOString(),
-    })
-    .eq("line_user_id", profile.userId);
+  const { data, error } = await supabase
+  .from("users")
+  .update({
+    display_name: name,
+    relationship_type: relationship,
+    living_type: livingStatus,
+    registration_completed: true,
+    registered_at: new Date().toISOString(),
+  })
+  .eq("line_user_id", profile.userId)
+  .select();
+
+console.log("LINE User ID:", profile.userId);
+console.log("更新データ:", data);
+console.log("Supabaseエラー:", error);
 
   if (error) {
     console.error(error);
