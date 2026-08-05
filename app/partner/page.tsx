@@ -142,7 +142,7 @@ export default function PartnerPage() {
           コードを共有する
         </p>
 
-        <div className="rounded-[24px] bg-white px-5 py-5 shadow-[0_5px_10px_rgba(47,89,85,0.12)]">
+        <div className="rounded-[20px] bg-white px-5 py-5 shadow-[0_5px_10px_rgba(47,89,85,0.12)]">
           <p className="text-center text-[24px] font-bold tracking-[0.08em] text-[#2F5955]">
             {inviteCode ?? "---- ----"}
           </p>
@@ -175,12 +175,12 @@ export default function PartnerPage() {
         </div>
       </section>
 
-      <section className="row-start-13 row-end-17 flex flex-col justify-center">
+      <section className="row-start-12 row-end-16 flex flex-col justify-center">
         <p className="mb-1 text-[13px] font-medium text-[#2F5955]">
           コードを入力する
         </p>
 
-        <div className="rounded-[24px] bg-white px-5 py-5 shadow-[0_10px_10px_rgba(47,89,85,0.12)]">
+        <div className="rounded-[20px] bg-white px-5 py-5 shadow-[0_10px_10px_rgba(47,89,85,0.12)]">
           <input
             id="invite_code"
             type="text"
