@@ -49,7 +49,6 @@ export default function PartnerPage() {
   const [couple, setCouple] = useState<Couple | null>(null);
   const [codeInput, setCodeInput] = useState("");
   const [copied, setCopied] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [action, setAction] = useState<"invite" | "join" | "end" | null>(
     null,
   );
@@ -64,8 +63,6 @@ export default function PartnerPage() {
       setCouple(data.couple);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "読み込みに失敗しました");
-    } finally {
-      setLoading(false);
     }
   }, []);
 
@@ -82,9 +79,6 @@ export default function PartnerPage() {
             error instanceof Error ? error.message : "読み込みに失敗しました",
           );
         }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
       });
 
     return () => {
@@ -170,10 +164,7 @@ export default function PartnerPage() {
         パートナー連携
       </h1>
 
-      {loading ? (
-        <p className="mt-16 text-center text-[#2F5955]">読み込み中...</p>
-      ) : (
-        <div className="mt-12 space-y-10">
+      <div className="mt-12 space-y-10">
           {couple?.status === "connected" ? (
             <section className="rounded-[24px] bg-white px-5 py-8 text-center shadow-[0_5px_10px_rgba(47,89,85,0.12)]">
               <p className="text-[18px] font-medium text-[#2F5955]">
@@ -258,8 +249,7 @@ export default function PartnerPage() {
               </div>
             </section>
           )}
-        </div>
-      )}
+      </div>
 
       {message && (
         <p className="mt-6 text-center text-[14px] text-[#2F5955]" role="status">
