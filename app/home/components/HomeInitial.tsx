@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { initializeLiff, liff } from "@/lib/liff";
 
 
 export default function HomeInitial() {
@@ -18,12 +19,69 @@ export default function HomeInitial() {
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isPlaceholderVisible, setIsPlaceholderVisible] = useState(true);
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsAlertVisible(true);
-    }, 500);
+  let cancelled = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
 
-    return () => clearTimeout(timer);
-  }, []);
+  const loadPartnerStatus = async () => {
+    try {
+      await initializeLiff();
+
+      if (!liff.isLoggedIn()) {
+        if (!cancelled) setIsAlertVisible(true);
+        return;
+      }
+
+      const accessToken = liff.getAccessToken();
+
+      if (!accessToken) {
+        if (!cancelled) setIsAlertVisible(true);
+        return;
+      }
+
+      const response = await fetch("/api/partner", {
+        cache: "no-store",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to load partner status");
+      }
+
+      const data = (await response.json()) as {
+        couple: {
+          status: string;
+        } | null;
+      };
+
+      if (cancelled || data.couple?.status === "connected") {
+        return;
+      }
+
+      timer = setTimeout(() => {
+        setIsAlertVisible(true);
+      }, 500);
+    } catch (error) {
+      console.error("Failed to load partner status", error);
+
+      // 状態を確認できない場合は、従来どおり案内を表示する
+      if (!cancelled) {
+        setIsAlertVisible(true);
+      }
+    }
+  };
+
+  void loadPartnerStatus();
+
+  return () => {
+    cancelled = true;
+
+    if (timer) {
+      clearTimeout(timer);
+    }
+  };
+}, []);
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
 
