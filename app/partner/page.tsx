@@ -1,5 +1,6 @@
 "use client";
 
+import LoadingScreen from "../components/LoadingScreen";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { initializeLiff, liff } from "@/lib/liff";
@@ -74,17 +75,23 @@ export default function PartnerPage() {
           return;
         }
 
-        setPartnerState("unlinked");
-
         try {
           const invite = await partnerRequest<InviteResponse>(
             "/api/partner/invite",
             { method: "POST" },
           );
-          if (!cancelled) setInviteCode(invite.couple.invite_code);
+
+          if (!cancelled) {
+            setInviteCode(invite.couple.invite_code);
+            setPartnerState("unlinked");
+          }
         } catch (error) {
           console.error("Failed to load invite code", error);
-          if (!cancelled) setCodeError(true);
+
+          if (!cancelled) {
+            setCodeError(true);
+            setPartnerState("unlinked");
+          }
         }
       } catch (error) {
         console.error("Failed to load partner status", error);
@@ -168,19 +175,7 @@ export default function PartnerPage() {
   };
 
   if (partnerState === "checking") {
-    return (
-      <main className="mx-auto grid h-dvh w-full max-w-[430px] grid-rows-20 px-6">
-        <section className="row-start-2 row-end-4 flex flex-col items-center justify-center">
-          <h1 className="text-[18px] text-[#1B3230]">パートナー連携</h1>
-        </section>
-        <p
-          className="row-start-10 text-center text-[13px] text-[#2F5955]"
-          role="status"
-        >
-          連携状態を確認しています…
-        </p>
-      </main>
-    );
+    return <LoadingScreen />;
   }
 
   if (partnerState === "connected") {
