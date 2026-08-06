@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { initializeLiff, liff } from "@/lib/liff";
+
+type PartnerResponse = {
+  couple: {
+    status: "pending" | "connected";
+  } | null;
+};
 
 type InviteResponse = {
   couple: {
@@ -42,6 +49,10 @@ async function partnerRequest<T>(path: string, init?: RequestInit) {
 }
 
 export default function PartnerPage() {
+  const router = useRouter();
+  const [partnerState, setPartnerState] = useState<
+    "checking" | "unlinked" | "connected"
+  >("checking");
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [codeInput, setCodeInput] = useState("");
   const [copied, setCopied] = useState(false);
@@ -52,14 +63,39 @@ export default function PartnerPage() {
   useEffect(() => {
     let cancelled = false;
 
-    partnerRequest<InviteResponse>("/api/partner/invite", { method: "POST" })
-      .then((data) => {
-        if (!cancelled) setInviteCode(data.couple.invite_code);
-      })
-      .catch((error: unknown) => {
-        console.error("Failed to load invite code", error);
-        if (!cancelled) setCodeError(true);
-      });
+    const loadPartner = async () => {
+      try {
+        const partner = await partnerRequest<PartnerResponse>("/api/partner");
+
+        if (cancelled) return;
+
+        if (partner.couple?.status === "connected") {
+          setPartnerState("connected");
+          return;
+        }
+
+        setPartnerState("unlinked");
+
+        try {
+          const invite = await partnerRequest<InviteResponse>(
+            "/api/partner/invite",
+            { method: "POST" },
+          );
+          if (!cancelled) setInviteCode(invite.couple.invite_code);
+        } catch (error) {
+          console.error("Failed to load invite code", error);
+          if (!cancelled) setCodeError(true);
+        }
+      } catch (error) {
+        console.error("Failed to load partner status", error);
+        if (cancelled) return;
+
+        setPartnerState("unlinked");
+        setCodeError(true);
+      }
+    };
+
+    void loadPartner();
 
     return () => {
       cancelled = true;
@@ -130,6 +166,54 @@ export default function PartnerPage() {
       setJoining(false);
     }
   };
+
+  if (partnerState === "checking") {
+    return (
+      <main className="mx-auto grid h-dvh w-full max-w-[430px] grid-rows-20 px-6">
+        <section className="row-start-2 row-end-4 flex flex-col items-center justify-center">
+          <h1 className="text-[18px] text-[#1B3230]">パートナー連携</h1>
+        </section>
+        <p
+          className="row-start-10 text-center text-[13px] text-[#2F5955]"
+          role="status"
+        >
+          連携状態を確認しています…
+        </p>
+      </main>
+    );
+  }
+
+  if (partnerState === "connected") {
+    return (
+      <main className="mx-auto grid h-dvh w-full max-w-[430px] grid-rows-20 px-6">
+        <section className="row-start-2 row-end-4 flex flex-col items-center justify-center">
+          <h1 className="text-[18px] text-[#1B3230]">パートナー連携</h1>
+        </section>
+
+        <h2 className="row-start-6 row-end-8 text-center text-[18px] font-medium leading-relaxed text-[#1B3230]">
+          パートナー連携が
+          <br />
+          完了しています
+        </h2>
+
+        <button
+          type="button"
+          disabled
+          className="row-start-15 h-12 w-full rounded-full bg-red-500 text-[18px] font-medium text-white"
+        >
+          連携解除する
+        </button>
+
+        <button
+          type="button"
+          onClick={() => router.push("/home")}
+          className="row-start-16 row-end-18 mt-2 h-12 w-full rounded-full bg-[#49B8B1] text-[18px] font-medium text-white active:opacity-80"
+        >
+          ホームへ戻る
+        </button>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto grid h-dvh w-full max-w-[430px] grid-rows-20 px-6">
