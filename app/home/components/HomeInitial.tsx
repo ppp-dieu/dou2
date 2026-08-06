@@ -1,5 +1,6 @@
 "use client";
 
+import LoadingScreen from "../../components/LoadingScreen";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { initializeLiff, liff } from "@/lib/liff";
@@ -37,7 +38,7 @@ export default function HomeInitial() {
 
         if (!accessToken) {
           if (!cancelled) setIsAlertVisible(true);
-          
+
           return;
         }
         const userResponse = await fetch("/api/user", {
@@ -56,9 +57,9 @@ export default function HomeInitial() {
         };
 
         if (!cancelled) {
-  setDisplayName(userData.display_name);
-  setIsUserLoaded(true);
-}
+          setDisplayName(userData.display_name);
+          setIsUserLoaded(true);
+        }
 
         const response = await fetch("/api/partner", {
           cache: "no-store",
@@ -122,8 +123,8 @@ export default function HomeInitial() {
     };
   }, [placeholders.length]);
   if (!isUserLoaded) {
-  return null;
-}
+    return <LoadingScreen />;
+  }
 
   return (
     <main className="grid h-dvh grid-rows-[repeat(20,minmax(0,1fr))] px-6">
