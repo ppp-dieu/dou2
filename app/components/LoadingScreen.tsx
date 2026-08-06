@@ -4,7 +4,7 @@ export default function LoadingScreen() {
   return (
     <main className="flex h-dvh items-center justify-center bg-white">
       <Image
-        src="/images/dou_face.svg"
+        src="/image/dou_face.svg"
         alt=""
         width={96}
         height={96}
