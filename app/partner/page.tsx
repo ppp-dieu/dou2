@@ -143,21 +143,16 @@ export default function PartnerPage() {
         </p>
 
         <div className="rounded-[20px] bg-white px-5 py-5 shadow-[0_5px_10px_rgba(47,89,85,0.12)]">
-          <p className="text-center text-[24px] font-bold tracking-[0.08em] text-[#2F5955]">
-            {inviteCode ?? "---- ----"}
+          <p
+            className={`flex h-8 items-center justify-center text-center font-bold tracking-[0.08em] ${
+              codeError ? "text-[12px] text-red-500" : "text-[24px] text-[#2F5955]"
+            }`}
+            role="status"
+          >
+            {codeError ? "コードを取得できませんでした" : (inviteCode ?? "---- ----")}
           </p>
 
-          
-            <p
-              className={`mt-2 h-4 text-center text-[12px] ${codeError ? "text-red-500" : "invisible"
-                }`}
-              role="status"
-            >
-              {codeError ? "コードを取得できませんでした" : "\u00A0"}
-            </p>
-          
-
-          <div className="mt-4 grid grid-cols-2 gap-4">
+          <div className="mt-10 grid grid-cols-2 gap-4">
             <button
               type="button"
               disabled={!inviteCode}
@@ -196,24 +191,18 @@ export default function PartnerPage() {
             className="h-14 w-full rounded-[10px] border border-[#8FD4D0] bg-white px-4 text-[18px] text-[#1B3230] outline-none placeholder:text-[18px] placeholder:text-gray-300"
           />
 
-          <div className="mt-4 flex justify-center">
+          <div className="mt-4 mb-8 flex justify-center">
             <button
               type="button"
               disabled={joining || !codeInput.trim()}
               onClick={handleJoin}
               className="h-12 w-[280px] rounded-full bg-[#49B8B1] text-[18px] font-medium text-white disabled:opacity-40"
             >
-              {joining ? "連携中..." : "連携する"}
+              <span aria-live="polite">
+                {joining ? "連携中..." : (joinMessage ?? "連携する")}
+              </span>
             </button>
           </div>
-
-          <p
-            className={`mt-3 h-5 text-center text-[13px] text-[#2F5955] ${joinMessage ? "" : "invisible"
-              }`}
-            role="status"
-          >
-            {joinMessage ?? "\u00A0"}
-          </p>
         </div>
       </section>
     </main>
