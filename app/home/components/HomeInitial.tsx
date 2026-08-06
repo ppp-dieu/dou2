@@ -211,12 +211,13 @@ export default function HomeInitial() {
       {/* 17段目：相談するボタン */}
       <section className="row-start-17 flex items-center justify-center">
         <button
-          type="button"
-          disabled={consultation.trim().length === 0}
-          className="mx-auto block h-12 w-full max-w-sm rounded-full bg-[#49B8B1] text-base font-medium text-white transition-opacity active:opacity-80 disabled:opacity-40 disabled:active:opacity-40"
-        >
-          相談する
-        </button>
+  type="button"
+  disabled={consultation.trim().length === 0}
+  onClick={() => router.push("/consultation")}
+  className="mx-auto block h-12 w-full max-w-sm rounded-full bg-[#49B8B1] text-base font-medium text-white transition-opacity active:opacity-80 disabled:opacity-40 disabled:active:opacity-40"
+>
+  相談する
+</button>
       </section>
 
       {/* 18〜20段目：下部ナビゲーション領域 */}
