@@ -186,11 +186,9 @@ export default function PartnerPage() {
   if (partnerState === "connected") {
     return (
       <main className="mx-auto grid h-dvh w-full max-w-[430px] grid-rows-20 px-6">
-        <section className="row-start-2 row-end-4 flex flex-col items-center justify-center">
-          <h1 className="text-[18px] text-[#1B3230]">パートナー連携</h1>
-        </section>
 
-        <h2 className="row-start-6 row-end-8 text-center text-[18px] font-medium leading-relaxed text-[#1B3230]">
+
+        <h2 className="row-start-6 row-end-8 text-center text-[18px] leading-relaxed text-[#1B3230]">
           パートナー連携が
           <br />
           完了しています
@@ -199,7 +197,7 @@ export default function PartnerPage() {
         <button
           type="button"
           disabled
-          className="row-start-15 h-12 w-full rounded-full bg-red-500 text-[18px] font-medium text-white"
+          className="row-start-15 h-12 w-full rounded-full bg-[#F7937D] text-[18px] font-medium text-white"
         >
           連携解除する
         </button>
@@ -207,7 +205,7 @@ export default function PartnerPage() {
         <button
           type="button"
           onClick={() => router.push("/home")}
-          className="row-start-16 row-end-18 mt-2 h-12 w-full rounded-full bg-[#49B8B1] text-[18px] font-medium text-white active:opacity-80"
+          className="row-start-16 row-end-18 mt-2 h-12 w-full rounded-full bg-white boder boder-[#49B8B1] text-[18px] font-medium text-[#49B8B1] active:opacity-80"
         >
           ホームへ戻る
         </button>
