@@ -194,23 +194,23 @@ export default function PartnerPage() {
           完了しています
         </h2>
 
-        <section className="row-start-15 row-end-19 flex flex-col justify-center gap-3">
-  <button
-    type="button"
-    disabled
-    className="h-12 w-full rounded-full bg-[#F7937D] text-[18px] font-medium text-white disabled:opacity-50"
-  >
-    連携解除する
-  </button>
+        <section className="row-start-14 row-end-19 flex flex-col justify-center gap-3">
+          <button
+            type="button"
+            disabled
+            className="h-12 w-full rounded-full bg-[#F7937D] text-[18px] font-medium text-white"
+          >
+            連携解除する
+          </button>
 
-  <button
-    type="button"
-    onClick={() => router.push("/home")}
-    className="h-12 w-full rounded-full border border-[#49B8B1] bg-white text-[18px] font-medium text-[#49B8B1] active:opacity-80"
-  >
-    ホームへ戻る
-  </button>
-</section>
+          <button
+            type="button"
+            onClick={() => router.push("/home")}
+            className="h-12 w-full rounded-full border border-[#49B8B1] bg-white text-[18px] font-medium text-[#49B8B1] active:opacity-80"
+          >
+            ホームへ戻る
+          </button>
+        </section>
       </main>
     );
   }
@@ -228,9 +228,8 @@ export default function PartnerPage() {
 
         <div className="rounded-[20px] bg-white px-5 py-5 shadow-[0_5px_10px_rgba(47,89,85,0.12)]">
           <p
-            className={`flex h-8 items-center justify-center text-center font-bold tracking-[0.08em] ${
-              codeError ? "text-[12px] text-red-500" : "text-[24px] text-[#2F5955]"
-            }`}
+            className={`flex h-8 items-center justify-center text-center font-bold tracking-[0.08em] ${codeError ? "text-[12px] text-red-500" : "text-[24px] text-[#2F5955]"
+              }`}
             role="status"
           >
             {codeError ? "コードを取得できませんでした" : (inviteCode ?? "---- ----")}
