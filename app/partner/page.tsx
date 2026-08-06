@@ -194,21 +194,23 @@ export default function PartnerPage() {
           完了しています
         </h2>
 
-        <button
-          type="button"
-          disabled
-          className="row-start-15 h-12 w-full rounded-full bg-[#F7937D] text-[18px] font-medium text-white"
-        >
-          連携解除する
-        </button>
+        <section className="row-start-15 row-end-19 flex flex-col justify-center gap-3">
+  <button
+    type="button"
+    disabled
+    className="h-12 w-full rounded-full bg-[#F7937D] text-[18px] font-medium text-white disabled:opacity-50"
+  >
+    連携解除する
+  </button>
 
-        <button
-          type="button"
-          onClick={() => router.push("/home")}
-          className="row-start-16 row-end-18 mt-2 h-12 w-full rounded-full bg-white boder boder-[#49B8B1] text-[18px] font-medium text-[#49B8B1] active:opacity-80"
-        >
-          ホームへ戻る
-        </button>
+  <button
+    type="button"
+    onClick={() => router.push("/home")}
+    className="h-12 w-full rounded-full border border-[#49B8B1] bg-white text-[18px] font-medium text-[#49B8B1] active:opacity-80"
+  >
+    ホームへ戻る
+  </button>
+</section>
       </main>
     );
   }
