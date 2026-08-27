@@ -3,7 +3,7 @@
 import LoadingScreen from "../components/LoadingScreen";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { initializeLiff, liff } from "@/lib/liff";
+import { getApiAuthHeaders, initializeLiff } from "@/lib/liff";
 
 type PartnerResponse = {
   couple: {
@@ -20,14 +20,9 @@ type InviteResponse = {
 async function partnerRequest<T>(path: string, init?: RequestInit) {
   await initializeLiff();
 
-  if (!liff.isLoggedIn()) {
-    liff.login();
-    throw new Error("LINEログインへ移動します");
-  }
+  const authHeaders = getApiAuthHeaders();
 
-  const accessToken = liff.getAccessToken();
-
-  if (!accessToken) {
+  if (!authHeaders) {
     throw new Error("LINEのログイン情報を取得できませんでした");
   }
 
@@ -36,7 +31,7 @@ async function partnerRequest<T>(path: string, init?: RequestInit) {
     cache: "no-store",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
+      ...authHeaders,
       ...init?.headers,
     },
   });
@@ -84,6 +79,7 @@ export default function PartnerPage() {
           if (!cancelled) {
             setInviteCode(invite.couple.invite_code);
             setPartnerState("unlinked");
+
           }
         } catch (error) {
           console.error("Failed to load invite code", error);
@@ -252,7 +248,7 @@ export default function PartnerPage() {
         </div>
       </section>
 
-      <section className="row-start-12 row-end-16 flex flex-col justify-center">
+      <section className="row-start-13 row-end-16 flex flex-col justify-center">
         <p className="mb-1 text-[13px] font-medium text-[#2F5955]">
           コードを入力する
         </p>

@@ -3,7 +3,7 @@
 import LoadingScreen from "../../components/LoadingScreen";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { initializeLiff, liff } from "@/lib/liff";
+import { getApiAuthHeaders, initializeLiff } from "@/lib/liff";
 
 
 export default function HomeInitial() {
@@ -12,6 +12,7 @@ export default function HomeInitial() {
   const [isAlertVisible, setIsAlertVisible] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [isUserLoaded, setIsUserLoaded] = useState(false);
+  const [isStartingConsultation, setIsStartingConsultation] = useState(false);
   const placeholders = [
     "例：会話が減って寂しい",
     "例：些細なことでケンカをしてしまう",
@@ -29,56 +30,93 @@ export default function HomeInitial() {
       try {
         await initializeLiff();
 
-        if (!liff.isLoggedIn()) {
-          if (!cancelled) setIsAlertVisible(true);
-          return;
-        }
+        const authHeaders = getApiAuthHeaders();
 
-        const accessToken = liff.getAccessToken();
-
-        if (!accessToken) {
+        if (!authHeaders) {
           if (!cancelled) setIsAlertVisible(true);
 
           return;
         }
-        const userResponse = await fetch("/api/user", {
+        const response = await fetch("/api/home-initial", {
           cache: "no-store",
           headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-
-        if (!userResponse.ok) {
-          throw new Error("Failed to load user");
-        }
-
-        const userData = (await userResponse.json()) as {
-          display_name: string;
-        };
-
-        if (!cancelled) {
-          setDisplayName(userData.display_name);
-          setIsUserLoaded(true);
-        }
-
-        const response = await fetch("/api/partner", {
-          cache: "no-store",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
+            ...authHeaders,
           },
         });
 
         if (!response.ok) {
-          throw new Error("Failed to load partner status");
+          throw new Error("Failed to load home initial data");
         }
 
         const data = (await response.json()) as {
-          couple: {
-            status: string;
+          user: {
+            display_name: string | null;
+          };
+          partner: {
+            couple: {
+              status: string;
+            } | null;
+          };
+          respondentConsultation:
+            | {
+                status: "pending";
+                consultationId: string;
+              }
+            | {
+                status: "none";
+              };
+          consultationState: {
+            consultationState:
+              | "none"
+              | "waiting_for_partner"
+              | "partner_completed";
+            consultationId?: string;
           } | null;
         };
 
-        if (cancelled || data.couple?.status === "connected") {
+        if (!cancelled) {
+          setDisplayName(data.user.display_name ?? "");
+        }
+
+        if (cancelled) {
+          return;
+        }
+
+        if (
+          data.respondentConsultation.status === "pending" &&
+          typeof data.respondentConsultation.consultationId === "string"
+        ) {
+          sessionStorage.setItem(
+            "consultationId",
+            data.respondentConsultation.consultationId,
+          );
+          sessionStorage.setItem("consultationRole", "respondent");
+          router.replace("/consultation");
+          return;
+        }
+
+        if (cancelled) {
+          return;
+        }
+
+        const isPartnerConnected =
+          data.partner.couple?.status === "connected";
+
+        if (
+          data.consultationState?.consultationState === "waiting_for_partner"
+        ) {
+          if (isPartnerConnected) {
+            router.replace("/consultation/waiting");
+          } else {
+            router.replace("/partner");
+          }
+
+          return;
+        }
+
+        setIsUserLoaded(true);
+
+        if (isPartnerConnected) {
           return;
         }
 
@@ -104,7 +142,7 @@ export default function HomeInitial() {
         clearTimeout(timer);
       }
     };
-  }, []);
+  }, [router]);
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
 
@@ -122,6 +160,61 @@ export default function HomeInitial() {
       clearTimeout(timeout);
     };
   }, [placeholders.length]);
+
+  const handleStartConsultation = async () => {
+    const trimmedConsultation = consultation.trim();
+
+    if (!trimmedConsultation || isStartingConsultation) {
+      return;
+    }
+
+    setIsStartingConsultation(true);
+
+    try {
+      const authHeaders = getApiAuthHeaders();
+
+      if (!authHeaders) {
+        throw new Error("LINEのログイン情報を取得できませんでした");
+      }
+
+      const response = await fetch("/api/consultations", {
+        method: "POST",
+        headers: {
+          ...authHeaders,
+        },
+      });
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+
+        throw new Error(data?.error ?? "相談を開始できませんでした");
+      }
+
+      const data = (await response.json()) as {
+        consultationId?: unknown;
+      };
+
+      if (typeof data.consultationId !== "string") {
+        throw new Error("作成した相談情報を確認できませんでした");
+      }
+
+      sessionStorage.setItem("consultationInput", trimmedConsultation);
+      sessionStorage.setItem("consultationId", data.consultationId);
+      router.push("/consultation");
+    } catch (error) {
+      console.error("Failed to start consultation", error);
+      window.alert(
+        error instanceof Error
+          ? error.message
+          : "相談を開始できませんでした",
+      );
+    } finally {
+      setIsStartingConsultation(false);
+    }
+  };
+
   if (!isUserLoaded) {
     return <LoadingScreen />;
   }
@@ -210,10 +303,12 @@ export default function HomeInitial() {
 
       {/* 17段目：相談するボタン */}
       <section className="row-start-17 flex items-center justify-center">
-        <button
+ <button
   type="button"
-  disabled={consultation.trim().length === 0}
-  onClick={() => router.push("/consultation")}
+  disabled={
+    consultation.trim().length === 0 || isStartingConsultation
+  }
+  onClick={() => void handleStartConsultation()}
   className="mx-auto block h-12 w-full max-w-sm rounded-full bg-[#49B8B1] text-base font-medium text-white transition-opacity active:opacity-80 disabled:opacity-40 disabled:active:opacity-40"
 >
   相談する
