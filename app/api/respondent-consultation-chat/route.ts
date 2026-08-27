@@ -12,6 +12,11 @@ type QaPair = {
 type RespondentChatResult = {
   accepted: boolean;
   question: string;
+  debug: {
+    known: string[];
+    missing: string[];
+    reason: string;
+  };
 };
 
 const MAX_VALID_ANSWERS = 4;
@@ -24,8 +29,24 @@ const responseSchema = {
   properties: {
     accepted: { type: "boolean" },
     question: { type: "string" },
+    debug: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        known: {
+          type: "array",
+          items: { type: "string" },
+        },
+        missing: {
+          type: "array",
+          items: { type: "string" },
+        },
+        reason: { type: "string" },
+      },
+      required: ["known", "missing", "reason"],
+    },
   },
-  required: ["accepted", "question"],
+  required: ["accepted", "question", "debug"],
 } as const;
 
 function isQaPair(value: unknown): value is QaPair {
@@ -70,11 +91,27 @@ function getOutputText(response: unknown) {
 
 function isRespondentChatResult(value: unknown): value is RespondentChatResult {
   if (typeof value !== "object" || value === null) return false;
+
   const result = value as Record<string, unknown>;
+
+  if (
+    typeof result.accepted !== "boolean" ||
+    typeof result.question !== "string" ||
+    result.question.trim().length === 0 ||
+    typeof result.debug !== "object" ||
+    result.debug === null
+  ) {
+    return false;
+  }
+
+  const debug = result.debug as Record<string, unknown>;
+
   return (
-    typeof result.accepted === "boolean" &&
-    typeof result.question === "string" &&
-    result.question.trim().length > 0
+    Array.isArray(debug.known) &&
+    debug.known.every((item) => typeof item === "string") &&
+    Array.isArray(debug.missing) &&
+    debug.missing.every((item) => typeof item === "string") &&
+    typeof debug.reason === "string"
   );
 }
 
@@ -155,16 +192,15 @@ export async function POST(request: Request) {
 
         instructions: [
           "あなたはカップル間の相談を整理するための聞き手です。回答者へのヒアリングを行います。",
-          "相談者の整理結果を読んだうえで、回答者側の意見を聞いてください。",
-          "相談者の整理結果は相談者側の認識にすぎず、客観的事実として扱ってはいけません。",
-          "相談者側・回答者側のどちらが正しい、または悪いと判断してはいけません。",
-          "相談者の主張への同意を回答者に誘導してはいけません。",
-
-          "回答者との会話を通して、次の3点を確認してください。",
+          "相談者の整理結果を読んだうえで、回答者との会話を通して次の3点を整理できる情報を集めてください。",
 
           "1. 回答者側から見て実際に起こった事実",
           "2. 回答者が感じた気持ち",
           "3. パートナーにしてほしいこと・依頼したいこと",
+
+          "相談者の整理結果は相談者側の認識にすぎず、客観的事実として扱ってはいけません。",
+          "相談者側・回答者側のどちらが正しい、または悪いと判断してはいけません。",
+          "相談者の主張への同意を回答者に誘導してはいけません。",
 
           "実際に起こった事実には、感情、評価、推測、相手の意図を含めないでください。",
 
@@ -172,41 +208,67 @@ export async function POST(request: Request) {
           "相談者の文章に登場する『彼』『彼女』『夫』『妻』『パートナー』などが回答者本人を指している場合は、回答者視点に正しく言い換えてください。",
           "例えば相談者が『私が頼んでも彼が家事をしてくれない』と話している場合、回答者には『パートナーが頼んでも、あなたが家事をしないのはどういうときですか？』のように質問してください。",
 
-          "すでに回答者が話した内容は聞き直さず、3点を整理するために不足している内容だけを質問してください。",
+          "毎回、相談者の整理結果とこれまでのqaPairs全体を読み、event、feelings、wishのうち、どの項目が整理結果を作れる状態まで取得できているかを内部で更新してください。",
+
+          "取得済みとは、整理結果として文章にできるだけの回答者本人の発言が得られている状態です。完全な詳細まで確認する必要はありません。",
+
+          "取得済みの項目を詳しくするための追加質問より、まだ取得できていない項目を優先してください。",
+          "同じ項目について、整理結果を作れる回答が得られた後は、原則として追加質問しないでください。",
+
+          "質問回数は最大4回です。",
+          "4回の中でevent、feelings、wishの3項目すべてについて、回答者本人の回答を得ることを優先してください。",
+
+          "すでに回答者が話した内容は聞き直さないでください。",
+          "表現を変えただけの実質的に同じ質問もしてはいけません。",
           "一度に質問するのは必ず1問だけにしてください。",
-          "質問は短く自然な日本語にしてください。",
+          "通常の質問は短く自然な日本語にしてください。",
 
-          "qaPairsが空の場合は、acceptedをtrueにして、相談者の整理結果を踏まえた自然な最初の質問を生成してください。",
-          "qaPairsがある場合は、最後のanswerが最後のquestionへの回答として成立しているかだけを判定してください。",
+          "qaPairsが空の場合はacceptedをtrueにしてください。",
+          "qaPairsがある場合は、最後のanswerが直前のquestionへの回答として成立しているかだけを判定してください。",
           "短い回答でも質問への応答として成立していればacceptedをtrueにしてください。",
-          "『分からない』『覚えていない』『特にない』も有効な回答としてacceptedをtrueにしてください。",
-          "意味のない文字列、質問と無関係な内容、回答として成立していない入力だけacceptedをfalseにしてください。",
+          "『分からない』『覚えていない』『特にない』も有効な回答です。",
 
+          "acceptedがfalseの場合は、新しい話題へ進まず、直前の質問の意図を保ったまま、1または2で答えられる二択の質問に変えて1問だけ聞き直してください。",
+          "二択の選択肢は、直前の質問、相談者の整理結果、これまでの回答者の発言から自然に導ける内容だけを使用してください。",
+          "回答者がまだ話していない事実、感情、希望を選択肢として創作してはいけません。",
+          "聞き直しでは、必ず『1. ○○』『2. ○○』の形式で選択肢を示してください。",
+
+          "targetは、今回の質問が主にevent、feelings、wishのどれを確認するものかを示してください。",
+          "聞き直しの場合はclarificationを使用してください。",
           "acceptedがfalseの場合は、新しい話題へ進まず、直前の質問の意図を保ったまま、より答えやすい表現で1問だけ聞き直してください。",
+          "開発確認用として、今回の質問を選んだ判断結果をdebugに出力してください。",
+          "debug.knownには、相談者の整理結果と回答者のこれまでの回答から、今回の質問判断に関係する既知情報だけを簡潔に入れてください。",
+          "debug.missingには、event、feelings、wishのうち、まだ整理結果を作れる状態まで取得できていない情報を簡潔に入れてください。",
+          "debug.reasonには、knownとmissingを踏まえて、なぜ今回この質問を選んだのかを簡潔に説明してください。",
+          "詳細な推論過程は出力せず、質問選択の判断結果だけをdebugに出力してください。",
 
-          "questionは常に空でない日本語の質問1つだけにしてください。",
-          "挨拶、説明、箇条書き、複数の質問は含めないでください。"
+
+          "questionは必ず空でない日本語の質問1つだけにしてください。",
+          "shouldFinishは常にfalseにしてください。"
         ].join("\n"),
 
 
-        input: JSON.stringify({
-          consultantPerspective: {
-            event: consultantResult.event,
-            feelings: consultantResult.feelings,
-            wish: consultantResult.wish,
+
+
+
+          input: JSON.stringify({
+            consultantPerspective: {
+              event: consultantResult.event,
+              feelings: consultantResult.feelings,
+              wish: consultantResult.wish,
+            },
+            qaPairs,
+            currentQuestionCount: body.currentQuestionCount,
+          }),
+          reasoning: { effort: "low" },
+          text: {
+            format: {
+              type: "json_schema",
+              name: "respondent_consultation_chat_result",
+              strict: true,
+              schema: responseSchema,
+            },
           },
-          qaPairs,
-          currentQuestionCount: body.currentQuestionCount,
-        }),
-        reasoning: { effort: "low" },
-        text: {
-          format: {
-            type: "json_schema",
-            name: "respondent_consultation_chat_result",
-            strict: true,
-            schema: responseSchema,
-          },
-        },
       }),
       cache: "no-store",
     });
@@ -245,6 +307,11 @@ export async function POST(request: Request) {
     return Response.json({
       accepted: result.accepted,
       question: result.question.trim(),
+      debug: {
+        known: result.debug.known,
+        missing: result.debug.missing,
+        reason: result.debug.reason.trim(),
+      },
     });
   } catch (error) {
     return apiErrorResponse(error);
