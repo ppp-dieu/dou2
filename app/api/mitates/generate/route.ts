@@ -479,10 +479,9 @@ export async function POST(request: Request) {
         ),
       ];
       const mitateUrl = `https://miniapp.line.me/${liffId}/mitate/${insertedMitate.id}`;
-      const message = `ミタテが完成しました\n\nミタテを見る\n${mitateUrl}`;
       const notificationResults = await Promise.allSettled(
         lineUserIds.map((lineUserId) =>
-          sendLinePushMessage(lineUserId, message),
+          sendLinePushMessage(lineUserId, mitateUrl),
         ),
       );
 

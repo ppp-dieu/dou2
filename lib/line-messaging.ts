@@ -2,7 +2,41 @@ import "server-only";
 
 const LINE_PUSH_MESSAGE_URL = "https://api.line.me/v2/bot/message/push";
 
-export async function sendLinePushMessage(to: string, text: string) {
+export function createMitateFlexContents(mitateUrl: string) {
+  return {
+    type: "bubble",
+    size: "mega",
+    body: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "24px",
+      spacing: "24px",
+      contents: [
+        {
+          type: "text",
+          text: "ミタテが作成されました！",
+          weight: "bold",
+          size: "xl",
+          color: "#333333",
+          wrap: true,
+        },
+        {
+          type: "button",
+          style: "primary",
+          height: "md",
+          color: "#49B8B1",
+          action: {
+            type: "uri",
+            label: "ミタテを見る",
+            uri: mitateUrl,
+          },
+        },
+      ],
+    },
+  } as const;
+}
+
+export async function sendLinePushMessage(to: string, mitateUrl: string) {
   const channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN?.trim();
   if (!channelAccessToken) {
     throw new Error("LINE_CHANNEL_ACCESS_TOKEN is not configured");
@@ -16,7 +50,14 @@ export async function sendLinePushMessage(to: string, text: string) {
     },
     body: JSON.stringify({
       to,
-      messages: [{ type: "text", text }],
+      messages: [
+        {
+          type: "flex",
+          altText: "ミタテが完成しました",
+          contents: createMitateFlexContents(mitateUrl),
+
+        },
+      ],
     }),
     cache: "no-store",
   });
