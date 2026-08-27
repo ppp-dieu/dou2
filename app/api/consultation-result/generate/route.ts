@@ -307,6 +307,7 @@ export async function POST(request: Request) {
       throw new ApiError("整理結果AIを利用できません", 503);
     }
 
+    const openAiStartedAt = Date.now();
     const openAiResponse = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
@@ -331,8 +332,8 @@ export async function POST(request: Request) {
             ? "feelingsは3候補作成し、各候補にはこの相談で最も中心となる気持ちを1つだけ含めてください。複数の感情を無理に抽出しないでください。候補ごとに別の感情を創作する必要はなく、同じ中心的な気持ちについて焦点や表現を変えて構いません。回答者本人の発言、または回答者が会話の中で明確に肯定した内容だけを根拠にしてください。最終出力は必ず「感情名：本文」とし、感情名は1〜4文字、本文は20文字以上30文字以内にしてください。"
             : "feelingsは3候補作成し、各候補にはこの相談で最も中心となる気持ちを1つだけ含めてください。複数の感情を無理に抽出しないでください。候補ごとに別の感情を創作する必要はなく、同じ中心的な気持ちについて焦点や表現を変えて構いません。相談者本人の発言、または相談者が会話の中で明確に肯定した内容だけを根拠にしてください。最終出力は必ず「感情名：本文」とし、感情名は1〜4文字、本文は20文字以上30文字以内にしてください。",
           role === "respondent"
-            ? "wishesは3候補作成してください。回答者本人が話した希望だけを使用し、新しい解決策や希望を追加しないでください。最終出力は各28文字以上38文字以内にしてください。"
-            : "wishesは3候補作成してください。相談者本人が話した希望だけを使用し、新しい解決策や希望を追加しないでください。最終出力は各28文字以上38文字以内にしてください。",
+            ? "wishesは3候補作成してください。回答者本人が話した、パートナーにしてほしいこと・依頼したいことだけを使用してください。新しい解決策や希望を追加しないでください。最終出力は各28文字以上38文字以内にしてください。"
+            : "wishesは3候補作成してください。相談者本人が話した、パートナーにしてほしいこと・依頼したいことだけを使用してください。新しい解決策や希望を追加しないでください。最終出力は各28文字以上38文字以内にしてください。",
           "相手の心理・意図の推測、善悪や責任の判断、人格評価、心理・医学的診断、本当はという断定、解決策の追加、説教、追加質問、関係改善を当然とする表現、強制や『〜すべき』という指導は禁止です。",
           role === "respondent"
             ? "各候補は空文字にせず、回答者本人の視点で自然かつ簡潔な日本語の文章にしてください。どちらが正しいか、どちらが悪いかという評価を入れてはいけません。"
@@ -350,6 +351,11 @@ export async function POST(request: Request) {
       }),
       cache: "no-store",
     });
+    console.log(
+      "OpenAI generate duration",
+      Date.now() - openAiStartedAt,
+      "ms",
+    );
 
     if (!openAiResponse.ok) {
       const requestId = openAiResponse.headers.get("x-request-id");
@@ -402,6 +408,7 @@ export async function POST(request: Request) {
         validationIssues,
       });
 
+      const retryStartedAt = Date.now();
       const retryResponse = await fetch(
         "https://api.openai.com/v1/responses",
         {
@@ -441,6 +448,11 @@ export async function POST(request: Request) {
           }),
           cache: "no-store",
         },
+      );
+      console.log(
+        "OpenAI retry duration",
+        Date.now() - retryStartedAt,
+        "ms",
       );
 
       if (!retryResponse.ok) {
