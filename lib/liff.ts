@@ -7,6 +7,7 @@ import {
 } from "@/lib/dev-auth";
 
 let initialized = false;
+let initializationPromise: Promise<void> | null = null;
 
 const developmentProfile = {
   userId: "local-development-user",
@@ -14,17 +15,31 @@ const developmentProfile = {
   pictureUrl: "",
 };
 
-export async function initializeLiff() {
-  if (isLocalDevelopmentBrowser()) return;
-  if (initialized) return;
+export function initializeLiff(): Promise<void> {
+  if (isLocalDevelopmentBrowser() || initialized) {
+    return Promise.resolve();
+  }
 
-  console.log("NEXT_PUBLIC_LIFF_ID:", process.env.NEXT_PUBLIC_LIFF_ID);
+  if (initializationPromise) {
+    return initializationPromise;
+  }
 
-  await liff.init({
-    liffId: process.env.NEXT_PUBLIC_LIFF_ID!,
-  });
+  const liffId = process.env.NEXT_PUBLIC_LIFF_ID?.trim();
+  if (!liffId) {
+    throw new Error("NEXT_PUBLIC_LIFF_ID is not configured");
+  }
 
-  initialized = true;
+  initializationPromise = liff
+    .init({ liffId })
+    .then(() => {
+      initialized = true;
+    })
+    .catch((error) => {
+      initializationPromise = null;
+      throw error;
+    });
+
+  return initializationPromise;
 }
 export { liff };
 export async function getLiffProfile() {
