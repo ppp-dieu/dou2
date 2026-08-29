@@ -8,6 +8,11 @@ type LineFlexMessage = {
   contents: object;
 };
 
+type LineNotificationType =
+  | "consultation"
+  | "consultation_reminder"
+  | "mitate";
+
 export function createMitateFlexContents(mitateUrl: string) {
   return {
     type: "bubble",
@@ -62,7 +67,7 @@ export function createConsultationFlexContents() {
         {
           type: "button",
           style: "primary",
-          height: "xl",
+          height: "md",
           color: "#49B8B1",
           action: {
             type: "uri",
@@ -78,6 +83,7 @@ export function createConsultationFlexContents() {
 export async function sendLineFlexMessage(
   to: string,
   message: LineFlexMessage,
+  notificationType: LineNotificationType,
 ) {
   const channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN?.trim();
   if (!channelAccessToken) {
@@ -99,6 +105,13 @@ export async function sendLineFlexMessage(
 
   if (!response.ok) {
     const requestId = response.headers.get("x-line-request-id");
+    const responseBody = await response.text().catch(() => "<unreadable>");
+    console.error("LINE push message failed", {
+      notificationType,
+      status: response.status,
+      responseBody,
+      requestId,
+    });
     throw new Error(
       `LINE push message failed (status: ${response.status}, requestId: ${requestId ?? "unknown"})`,
     );
@@ -106,55 +119,67 @@ export async function sendLineFlexMessage(
 }
 
 export async function sendLinePushMessage(to: string, mitateUrl: string) {
-  await sendLineFlexMessage(to, {
-    type: "flex",
-    altText: "ミタテが完成しました",
-    contents: createMitateFlexContents(mitateUrl),
-  });
+  await sendLineFlexMessage(
+    to,
+    {
+      type: "flex",
+      altText: "ミタテが完成しました",
+      contents: createMitateFlexContents(mitateUrl),
+    },
+    "mitate",
+  );
 }
 
 export async function sendConsultationLinePushMessage(to: string) {
-  await sendLineFlexMessage(to, {
-    type: "flex",
-    altText: "パートナーから相談が届いています。",
-    contents: createConsultationFlexContents(),
-  });
+  await sendLineFlexMessage(
+    to,
+    {
+      type: "flex",
+      altText: "パートナーから相談が届いています。",
+      contents: createConsultationFlexContents(),
+    },
+    "consultation",
+  );
 }
 
 export async function sendConsultationReminderLinePushMessage(to: string) {
-  await sendLineFlexMessage(to, {
-    type: "flex",
-    altText:
-      "回答していないパートナーからの相談があります。あなたの気持ちを教えてください。",
-    contents: {
-      type: "bubble",
-      size: "mega",
-      body: {
-        type: "box",
-        layout: "vertical",
-        paddingAll: "24px",
-        spacing: "24px",
-        contents: [
-          {
-            type: "text",
-            text: "メッセージが届いています",
-            size: "md",
-            color: "#333333",
-            wrap: true,
-          },
-          {
-            type: "button",
-            style: "primary",
-            height: "xl",
-            color: "#49B8B1",
-            action: {
-              type: "uri",
-              label: "回答する",
-              uri: "https://miniapp.line.me/2010712048-qtDtawdD",
+  await sendLineFlexMessage(
+    to,
+    {
+      type: "flex",
+      altText:
+        "回答していないパートナーからの相談があります。あなたの気持ちを教えてください。",
+      contents: {
+        type: "bubble",
+        size: "mega",
+        body: {
+          type: "box",
+          layout: "vertical",
+          paddingAll: "24px",
+          spacing: "24px",
+          contents: [
+            {
+              type: "text",
+              text: "メッセージが届いています",
+              size: "md",
+              color: "#333333",
+              wrap: true,
             },
-          },
-        ],
+            {
+              type: "button",
+              style: "primary",
+              height: "md",
+              color: "#49B8B1",
+              action: {
+                type: "uri",
+                label: "回答する",
+                uri: "https://miniapp.line.me/2010712048-qtDtawdD",
+              },
+            },
+          ],
+        },
       },
     },
-  });
+    "consultation_reminder",
+  );
 }

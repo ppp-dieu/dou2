@@ -8,11 +8,10 @@ import { apiErrorResponse, getVerifiedUser } from "@/lib/server/line-user";
 export async function GET(request: Request) {
   try {
     const { supabase, userId, displayName } = await getVerifiedUser(request);
-    const partner = await getPartnerData(supabase, userId);
-    const respondentConsultation = await getRespondentConsultationData(
-      supabase,
-      userId,
-    );
+    const [partner, respondentConsultation] = await Promise.all([
+      getPartnerData(supabase, userId),
+      getRespondentConsultationData(supabase, userId),
+    ]);
 
     // Preserve HomeInitial's respondent-first redirect priority and query scope.
     const consultationState =

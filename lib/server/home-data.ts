@@ -104,35 +104,31 @@ export async function getConsultationStateData(
     return { consultationState: "none" as const };
   }
 
-  const { data: consultantResult, error: consultantResultError } = await supabase
-    .from("consultation_results")
-    .select("id")
-    .eq("consultation_id", consultation.id)
-    .eq("role", "consultant")
-    .maybeSingle();
+  const { data: consultationResults, error: consultationResultsError } =
+    await supabase
+      .from("consultation_results")
+      .select("role")
+      .eq("consultation_id", consultation.id)
+      .in("role", ["consultant", "respondent"]);
 
-  if (consultantResultError) {
-    console.error("Failed to load consultant result", consultantResultError);
+  if (consultationResultsError) {
+    console.error("Failed to load consultation results", consultationResultsError);
     throw new ApiError("相談状態を取得できませんでした", 500);
   }
 
-  if (!consultantResult) {
+  const hasConsultantResult = consultationResults?.some(
+    (result) => result.role === "consultant",
+  );
+
+  if (!hasConsultantResult) {
     return { consultationState: "none" as const };
   }
 
-  const { data: respondentResult, error: respondentResultError } = await supabase
-    .from("consultation_results")
-    .select("id")
-    .eq("consultation_id", consultation.id)
-    .eq("role", "respondent")
-    .maybeSingle();
+  const hasRespondentResult = consultationResults?.some(
+    (result) => result.role === "respondent",
+  );
 
-  if (respondentResultError) {
-    console.error("Failed to load respondent result", respondentResultError);
-    throw new ApiError("相談状態を取得できませんでした", 500);
-  }
-
-  if (respondentResult) {
+  if (hasRespondentResult) {
     return {
       consultationState: "partner_completed" as const,
       consultationId: consultation.id,
