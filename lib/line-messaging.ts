@@ -2,6 +2,12 @@ import "server-only";
 
 const LINE_PUSH_MESSAGE_URL = "https://api.line.me/v2/bot/message/push";
 
+type LineFlexMessage = {
+  type: "flex";
+  altText: string;
+  contents: object;
+};
+
 export function createMitateFlexContents(mitateUrl: string) {
   return {
     type: "bubble",
@@ -36,7 +42,43 @@ export function createMitateFlexContents(mitateUrl: string) {
   } as const;
 }
 
-export async function sendLinePushMessage(to: string, mitateUrl: string) {
+export function createConsultationFlexContents() {
+  return {
+    type: "bubble",
+    size: "mega",
+    body: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "24px",
+      spacing: "24px",
+      contents: [
+        {
+          type: "text",
+          text: "パートナーから相談が届いています。",
+          size: "md",
+          color: "#333333",
+          wrap: true,
+        },
+        {
+          type: "button",
+          style: "primary",
+          height: "xl",
+          color: "#49B8B1",
+          action: {
+            type: "uri",
+            label: "回答する",
+            uri: "https://miniapp.line.me/2010712048-qtDtawdD",
+          },
+        },
+      ],
+    },
+  } as const;
+}
+
+export async function sendLineFlexMessage(
+  to: string,
+  message: LineFlexMessage,
+) {
   const channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN?.trim();
   if (!channelAccessToken) {
     throw new Error("LINE_CHANNEL_ACCESS_TOKEN is not configured");
@@ -50,14 +92,7 @@ export async function sendLinePushMessage(to: string, mitateUrl: string) {
     },
     body: JSON.stringify({
       to,
-      messages: [
-        {
-          type: "flex",
-          altText: "ミタテが完成しました",
-          contents: createMitateFlexContents(mitateUrl),
-
-        },
-      ],
+      messages: [message],
     }),
     cache: "no-store",
   });
@@ -68,4 +103,58 @@ export async function sendLinePushMessage(to: string, mitateUrl: string) {
       `LINE push message failed (status: ${response.status}, requestId: ${requestId ?? "unknown"})`,
     );
   }
+}
+
+export async function sendLinePushMessage(to: string, mitateUrl: string) {
+  await sendLineFlexMessage(to, {
+    type: "flex",
+    altText: "ミタテが完成しました",
+    contents: createMitateFlexContents(mitateUrl),
+  });
+}
+
+export async function sendConsultationLinePushMessage(to: string) {
+  await sendLineFlexMessage(to, {
+    type: "flex",
+    altText: "パートナーから相談が届いています。",
+    contents: createConsultationFlexContents(),
+  });
+}
+
+export async function sendConsultationReminderLinePushMessage(to: string) {
+  await sendLineFlexMessage(to, {
+    type: "flex",
+    altText:
+      "回答していないパートナーからの相談があります。あなたの気持ちを教えてください。",
+    contents: {
+      type: "bubble",
+      size: "mega",
+      body: {
+        type: "box",
+        layout: "vertical",
+        paddingAll: "24px",
+        spacing: "24px",
+        contents: [
+          {
+            type: "text",
+            text: "メッセージが届いています",
+            size: "md",
+            color: "#333333",
+            wrap: true,
+          },
+          {
+            type: "button",
+            style: "primary",
+            height: "xl",
+            color: "#49B8B1",
+            action: {
+              type: "uri",
+              label: "回答する",
+              uri: "https://miniapp.line.me/2010712048-qtDtawdD",
+            },
+          },
+        ],
+      },
+    },
+  });
 }

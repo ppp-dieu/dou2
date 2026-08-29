@@ -3,6 +3,7 @@ import {
   apiErrorResponse,
   getVerifiedUser,
 } from "@/lib/server/line-user";
+import { sendConsultationLinePushMessage } from "@/lib/line-messaging";
 
 type ConsultationResultBody = {
   consultationId?: unknown;
@@ -103,6 +104,33 @@ export async function POST(request: Request) {
     if (insertError) {
       console.error("Failed to save consultation result", insertError);
       throw new ApiError("整理結果を保存できませんでした", 500);
+    }
+
+    if (role === "consultant" && consultation.respondent_user_id) {
+      try {
+        const { data: respondent, error: respondentError } = await supabase
+          .from("users")
+          .select("line_user_id")
+          .eq("id", consultation.respondent_user_id)
+          .maybeSingle();
+
+        if (respondentError) {
+          throw new Error("Failed to load consultation LINE recipient", {
+            cause: respondentError,
+          });
+        }
+
+        const lineUserId = respondent?.line_user_id?.trim();
+        if (lineUserId) {
+          await sendConsultationLinePushMessage(lineUserId);
+        }
+      } catch (error) {
+        console.error("Failed to send consultation LINE notification", {
+          consultationId: consultation.id,
+          respondentUserId: consultation.respondent_user_id,
+          error,
+        });
+      }
     }
 
     return Response.json({ success: true }, { status: 201 });
