@@ -155,9 +155,9 @@ function getValidationIssues(
   result.events.forEach((value, index) => {
     const length = value.trim().length;
 
-    if (length < 40 || length > 55) {
+    if (length > 55) {
       issues.push(
-        `events[${index}] は${length}文字です。40〜55文字にしてください。`,
+        `events[${index}] は${length}文字です。55文字以内にしてください。`,
       );
     }
   });
@@ -176,15 +176,15 @@ function getValidationIssues(
       const emotionName = match[1];
       const body = match[2].trim();
 
-      if (emotionName.length < 1 || emotionName.length > 4) {
+      if (emotionName.length > 4) {
         issues.push(
-          `feelings[${candidateIndex}][${feelingIndex}] の感情名は${emotionName.length}文字です。1〜4文字にしてください。`,
+          `feelings[${candidateIndex}][${feelingIndex}] の感情名は${emotionName.length}文字です。4文字以内にしてください。`,
         );
       }
 
-      if (body.length < 20 || body.length > 30) {
+      if (body.length > 30) {
         issues.push(
-          `feelings[${candidateIndex}][${feelingIndex}] の本文は${body.length}文字です。20〜30文字にしてください。`,
+          `feelings[${candidateIndex}][${feelingIndex}] の本文は${body.length}文字です。30文字以内にしてください。`,
         );
       }
     });
@@ -193,9 +193,9 @@ function getValidationIssues(
   result.wishes.forEach((value, index) => {
     const length = value.trim().length;
 
-    if (length < 28 || length > 38) {
+    if (length > 38) {
       issues.push(
-        `wishes[${index}] は${length}文字です。28〜38文字にしてください。`,
+        `wishes[${index}] は${length}文字です。38文字以内にしてください。`,
       );
     }
   });
@@ -417,10 +417,12 @@ export async function POST(request: Request) {
             Authorization: `Bearer ${apiKey}`,
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify({
             model: "gpt-5.6-terra",
             store: false,
             reasoning: { effort: "low" },
+
             instructions: [
               "あなたは日本語文章の文字数調整だけを行う編集者です。",
               "入力には現在の整理結果と、修正が必要な箇所が渡されます。",
@@ -428,15 +430,19 @@ export async function POST(request: Request) {
               "指摘された候補だけを修正してください。",
               "元の意味、事実、感情、希望を変更してはいけません。",
               "新しい情報を追加してはいけません。",
-              "eventsは40〜55文字。",
-              "feelingsは「感情名：本文」形式。感情名1〜4文字、本文20〜30文字。",
-              "wishesは28〜38文字。",
+
+              "eventsは55文字以内にしてください。",
+              "feelingsは「感情名：本文」形式とし、感情名は4文字以内、本文は30文字以内にしてください。",
+              "wishesは38文字以内にしてください。",
+
               "修正後は必ず文字数を確認してから出力してください。",
             ].join("\n"),
+
             input: JSON.stringify({
               candidates: finalResult,
               validationIssues,
             }),
+
             text: {
               format: {
                 type: "json_schema",
