@@ -18,13 +18,14 @@ export async function initializeLiff() {
   if (isLocalDevelopmentBrowser()) return;
   if (initialized) return;
 
+  console.log("NEXT_PUBLIC_LIFF_ID:", process.env.NEXT_PUBLIC_LIFF_ID);
+
   await liff.init({
     liffId: process.env.NEXT_PUBLIC_LIFF_ID!,
   });
 
   initialized = true;
 }
-
 export { liff };
 export async function getLiffProfile() {
   if (isLocalDevelopmentBrowser()) {
