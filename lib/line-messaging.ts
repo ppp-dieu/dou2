@@ -34,7 +34,6 @@ export function createMitateFlexContents(mitateUrl: string) {
           type: "button",
           style: "primary",
           height: "md",
-          weight: "bold",
           color: "#49B8B1",
           action: {
             type: "uri",
