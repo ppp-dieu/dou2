@@ -33,7 +33,7 @@ export function createMitateFlexContents(mitateUrl: string) {
         {
           type: "button",
           style: "primary",
-          height: "xl",
+          height: "md",
           weight: "bold",
           color: "#49B8B1",
           action: {
