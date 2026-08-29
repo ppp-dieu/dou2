@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function LoadingScreen() {
   return (
-    <main className="flex h-dvh items-center justify-center bg-white">
+    <main className="flex h-dvh items-center justify-center">
       <Image
         src="/image/dou_face.svg"
         alt=""
