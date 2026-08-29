@@ -6,21 +6,18 @@ import { getApiAuthHeaders, initializeLiff } from "@/lib/liff";
 import MitateCard from "../components/MitateCard";
 import type { Mitate } from "../types";
 
-type ErrorResponse = {
-  error?: string;
-};
-
 export default function MitateDetailPage() {
   const { mitateId } = useParams<{ mitateId: string }>();
-  const [mitate, setMitate] = useState<Mitate | null>(null);
-  const [isOpen, setIsOpen] = useState(true);
+
+  const [mitates, setMitates] = useState<Mitate[]>([]);
+  const [openIds, setOpenIds] = useState<Set<string>>(() => new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
-    const loadMitate = async () => {
+    const loadMitates = async () => {
       try {
         await initializeLiff();
 
@@ -30,31 +27,29 @@ export default function MitateDetailPage() {
           throw new Error("LINEのログイン情報を取得できませんでした");
         }
 
-        const response = await fetch(
-          `/api/mitates/${encodeURIComponent(mitateId)}`,
-          {
-            cache: "no-store",
-            headers: authHeaders,
-          },
-        );
-        const data = (await response.json().catch(() => null)) as unknown;
+        const response = await fetch("/api/mitates", {
+          cache: "no-store",
+          headers: authHeaders,
+        });
 
         if (!response.ok) {
-          const errorData = data as ErrorResponse | null;
-          throw new Error(
-            errorData?.error
-              ? errorData.error
-              : "ミタテを読み込めませんでした",
-          );
-        }
-
-        if (!data || typeof data !== "object") {
           throw new Error("ミタテを読み込めませんでした");
         }
 
-        if (!cancelled) {
-          setMitate(data as Mitate);
+        const data = (await response.json()) as Mitate[];
+
+        if (cancelled) return;
+
+        const targetMitate = data.find(
+          (mitate) => mitate.id === mitateId,
+        );
+
+        if (!targetMitate) {
+          throw new Error("対象のミタテが見つかりません");
         }
+
+        setMitates(data);
+        setOpenIds(new Set([targetMitate.id]));
       } catch (loadError) {
         console.error("ミタテの読み込みに失敗しました", loadError);
 
@@ -72,12 +67,26 @@ export default function MitateDetailPage() {
       }
     };
 
-    void loadMitate();
+    void loadMitates();
 
     return () => {
       cancelled = true;
     };
   }, [mitateId]);
+
+  const toggleMitate = (id: string) => {
+    setOpenIds((current) => {
+      const next = new Set(current);
+
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+
+      return next;
+    });
+  };
 
   return (
     <main className="grid h-dvh grid-rows-20 bg-[#E7FBFB] px-4">
@@ -88,7 +97,7 @@ export default function MitateDetailPage() {
       </div>
 
       <section className="row-start-3 row-end-21 overflow-y-auto pb-6 pt-2">
-        <div className="mx-auto w-full max-w-md">
+        <div className="mx-auto flex w-full max-w-md flex-col gap-3">
           {isLoading && (
             <p className="text-center text-[13px] text-[#7A8C8A]">
               読み込み中...
@@ -96,18 +105,22 @@ export default function MitateDetailPage() {
           )}
 
           {error && (
-            <p role="alert" className="text-center text-[13px] text-[#1B3230]">
+            <p
+              role="alert"
+              className="text-center text-[13px] text-[#1B3230]"
+            >
               {error}
             </p>
           )}
 
-          {mitate && (
+          {mitates.map((mitate) => (
             <MitateCard
+              key={mitate.id}
               mitate={mitate}
-              isOpen={isOpen}
-              onToggle={() => setIsOpen((current) => !current)}
+              isOpen={openIds.has(mitate.id)}
+              onToggle={() => toggleMitate(mitate.id)}
             />
-          )}
+          ))}
         </div>
       </section>
     </main>

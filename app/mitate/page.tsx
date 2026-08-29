@@ -1,5 +1,6 @@
 "use client";
 
+import LoadingScreen from "@/app/components/LoadingScreen";
 import { useEffect, useState } from "react";
 import { getApiAuthHeaders, initializeLiff } from "@/lib/liff";
 import MitateCard from "./components/MitateCard";
@@ -54,6 +55,7 @@ export default function MitatePage() {
 
     void loadMitates();
 
+
     return () => {
       cancelled = true;
     };
@@ -72,6 +74,9 @@ export default function MitatePage() {
       return next;
     });
   };
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <main className="grid h-dvh grid-rows-20 bg-[#E7FBFB] px-4">
@@ -83,12 +88,7 @@ export default function MitatePage() {
 
       <section className="row-start-3 row-end-21 overflow-y-auto pb-6 pt-2">
         <div className="mx-auto flex w-full max-w-md flex-col gap-3">
-          {isLoading && (
-            <p className="text-center text-[13px] text-[#7A8C8A]">
-              読み込み中...
-            </p>
-          )}
-
+    
           {error && (
             <p className="text-center text-[13px] text-[#1B3230]">
               {error}
