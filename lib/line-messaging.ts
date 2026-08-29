@@ -15,15 +15,15 @@ export function createMitateFlexContents(mitateUrl: string) {
         {
           type: "text",
           text: "ミタテが作成されました！",
-          weight: "bold",
-          size: "xl",
+          size: "md",
           color: "#333333",
           wrap: true,
         },
         {
           type: "button",
           style: "primary",
-          height: "md",
+          height: "xl",
+          weight: "bold",
           color: "#49B8B1",
           action: {
             type: "uri",
