@@ -8,37 +8,6 @@ import { useRouter } from "next/navigation";
 import { getApiAuthHeaders } from "@/lib/liff";
 import LoadingScreen from "../../components/LoadingScreen";
 
-
-
-const EVENT_OPTIONS = [
-    "何気ない内容のLINEを送ったあと、相手からの返信を待っている。相手は普段から返信が特別早いタイプではないが、返信が来ない状態が続いている。",
-    "LINEで何気ないメッセージを送ったが、相手からまだ返信が届いていない。普段から返信は早くないものの、今回はいつもより長く待っている。",
-    "相手にLINEを送信したあと、返信を待っている状態が続いている。日頃から返信頻度は高くないが、今回は返信がない時間が気になっている。",
-];
-
-const FEELING_OPTIONS = [
-    [
-        "疲れた：返信を待つことに疲れているああああああああああああああああああああ",
-        "疲れた：返信を待つことに疲れているああああああああああああああああああああ",
-        "疲れた：返信を待つことに疲れているああああああああああああああああああああ",
-    ],
-    [
-        "疲れた：返信を待つことに疲れているああああああああああああああああああああ",
-        "不安：返信がない理由が気になる",
-        "期待：もう少し気にかけてほしい",
-    ],
-    [
-        "疲れた：返信を待つことに疲れているああああああああああああああああああああ",
-        "不満：待つ時間を負担に感じている",
-        "期待：気軽にやり取りを続けたい",
-    ],
-];
-const WISH_OPTIONS = [
-    "たわいもない会話を自然に続けたいああああああああああああああああああああああ",
-    "返信を待ち続けなくても安心できる関係にしたい。",
-    "お互いに無理のない返信ペースでやり取りしたい。",
-];
-
 type GeneratedResultCandidates = {
     events: string[];
     feelings: string[][];
@@ -175,42 +144,10 @@ export default function ConsultationConfirmPage() {
         void initializeConfirmPage();
     }, [router]);
 
-    const handlePreviousEvent = () => {
-        setEventIndex((current) =>
-            current === 0 ? EVENT_OPTIONS.length - 1 : current - 1
-        );
-    };
-
-    const handleNextEvent = () => {
-        setEventIndex((current) =>
-            current === EVENT_OPTIONS.length - 1 ? 0 : current + 1
-        );
-    };
     const eventSwiperRef = useRef<SwiperType | null>(null);
 
     const feelingSwiperRef = useRef<SwiperType | null>(null);
-    const handlePreviousFeeling = () => {
-        setFeelingIndex((current) =>
-            current === 0 ? FEELING_OPTIONS.length - 1 : current - 1
-        );
-    };
 
-    const handleNextFeeling = () => {
-        setFeelingIndex((current) =>
-            current === FEELING_OPTIONS.length - 1 ? 0 : current + 1
-        );
-    };
-    const handlePreviousWish = () => {
-        setWishIndex((current) =>
-            current === 0 ? WISH_OPTIONS.length - 1 : current - 1
-        );
-    };
-
-    const handleNextWish = () => {
-        setWishIndex((current) =>
-            current === WISH_OPTIONS.length - 1 ? 0 : current + 1
-        );
-    };
     const wishSwiperRef = useRef<SwiperType | null>(null);
 
     const handleSaveResult = async () => {
