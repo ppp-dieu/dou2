@@ -125,6 +125,10 @@ export default function ConsultationWaitingPage() {
               ふたりの話から
               <br />
               ミタテを作っています…
+              <br />
+              LINEでお知らせするので
+              <br />
+              画面を閉じても構いません
             </>
           ) : (
             <>
@@ -133,6 +137,10 @@ export default function ConsultationWaitingPage() {
               パートナーから
               <br />
               話を聞いています…
+               <br />
+              LINEでお知らせするので
+              <br />
+              画面を閉じても構いません
             </>
           )}
         </p>
