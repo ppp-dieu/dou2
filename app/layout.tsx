@@ -3,8 +3,8 @@ import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 
 const notoSansJP = Noto_Sans_JP({
-  variable: "--font-noto-sans-jp",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -24,11 +24,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="ja"
-      className={`${notoSansJP.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">
+    <html lang="ja" className="h-full antialiased">
+      <body
+        className={`${notoSansJP.className} min-h-full flex flex-col`}
+      >
         {children}
       </body>
     </html>

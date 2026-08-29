@@ -52,7 +52,3 @@ body {
 .ai-message-in {
   animation: ai-message-in 0.7s ease-out both;
 }
-
-body {
-  font-family: var(--font-noto-sans-jp), sans-serif;
-}
