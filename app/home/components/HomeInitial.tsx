@@ -13,6 +13,7 @@ export default function HomeInitial() {
   const [displayName, setDisplayName] = useState("");
   const [isUserLoaded, setIsUserLoaded] = useState(false);
   const [isStartingConsultation, setIsStartingConsultation] = useState(false);
+  const [isConsultationError, setIsConsultationError] = useState(false);
   const placeholders = [
     "例：会話が減って寂しい",
     "例：些細なことでケンカをしてしまう",
@@ -58,18 +59,18 @@ export default function HomeInitial() {
             } | null;
           };
           respondentConsultation:
-            | {
-                status: "pending";
-                consultationId: string;
-              }
-            | {
-                status: "none";
-              };
+          | {
+            status: "pending";
+            consultationId: string;
+          }
+          | {
+            status: "none";
+          };
           consultationState: {
             consultationState:
-              | "none"
-              | "waiting_for_partner"
-              | "partner_completed";
+            | "none"
+            | "waiting_for_partner"
+            | "partner_completed";
             consultationId?: string;
           } | null;
         };
@@ -200,8 +201,48 @@ export default function HomeInitial() {
         throw new Error("作成した相談情報を確認できませんでした");
       }
 
+      const chatResponse = await fetch("/api/consultation-chat", {
+        method: "POST",
+        headers: {
+          ...authHeaders,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          consultationId: data.consultationId,
+          initialConsultation: trimmedConsultation,
+          qaPairs: [],
+          currentQuestionCount: 0,
+        }),
+      });
+
+      if (!chatResponse.ok) {
+        throw new Error("相談AIから回答を取得できませんでした");
+      }
+
+      const chatData = (await chatResponse.json()) as {
+        initialConsultationAccepted: boolean;
+        accepted: boolean;
+        target: "event" | "feelings" | "wish" | "clarification";
+        question: string;
+      };
+
+      if (!chatData.initialConsultationAccepted) {
+        setIsConsultationError(true);
+        return;
+      }
+
+      setIsConsultationError(false);
+
       sessionStorage.setItem("consultationInput", trimmedConsultation);
       sessionStorage.setItem("consultationId", data.consultationId);
+
+      // /consultation 側でAIをもう一度呼ばないよう、
+      // ここで取得した最初の質問も渡す
+      sessionStorage.setItem(
+        "initialConsultationQuestion",
+        chatData.question,
+      );
+
       router.push("/consultation");
     } catch (error) {
       console.error("Failed to start consultation", error);
@@ -283,18 +324,25 @@ export default function HomeInitial() {
 
             <textarea
               value={consultation}
-              onChange={(event) => setConsultation(event.target.value)}
+              onChange={(event) => {
+                setConsultation(event.target.value);
+                setIsConsultationError(false);
+              }}
               maxLength={200}
               className="block h-full min-h-0 w-full resize-none rounded-[15px] border border-[#D9E3E2] bg-white px-4 py-4 text-[16px] leading-relaxed text-[#1B3230] outline-none focus:border-[#49B8B1]"
             />
           </div>
 
-          <div className="mt-2 flex items-start justify-between gap-3">
-            <p className="text-[12px] text-red-500">
-              パートナーとの出来事や、困っていることをもう少し具体的に入力してください
-            </p>
+          <div className="mt-2 grid grid-cols-[1fr_auto] items-start gap-3">
+            <div className="min-h-[36px] min-w-0">
+              {isConsultationError && (
+                <p className="max-w-[260px] text-[12px] leading-[18px] text-red-500">
+                  パートナーとの出来事や、困っていることをもう少し具体的に入力してください
+                </p>
+              )}
+            </div>
 
-            <p className="shrink-0 text-[12px] text-[#7A8C89]">
+            <p className="whitespace-nowrap text-[12px] text-[#7A8C89]">
               {consultation.length} / 200
             </p>
           </div>
@@ -303,16 +351,16 @@ export default function HomeInitial() {
 
       {/* 14段目：相談するボタン */}
       <section className="row-start-14 flex items-center justify-center">
- <button
-  type="button"
-  disabled={
-    consultation.trim().length === 0 || isStartingConsultation
-  }
-  onClick={() => void handleStartConsultation()}
-  className="mx-auto block h-12 w-full max-w-sm rounded-full bg-[#49B8B1] text-base font-medium text-white transition-opacity active:opacity-80 disabled:opacity-40 disabled:active:opacity-40"
->
-  相談する
-</button>
+        <button
+          type="button"
+          disabled={
+            consultation.trim().length === 0 || isStartingConsultation
+          }
+          onClick={() => void handleStartConsultation()}
+          className="mx-auto block h-12 w-full max-w-sm rounded-full bg-[#49B8B1] text-base font-medium text-white transition-opacity active:opacity-80 disabled:opacity-40 disabled:active:opacity-40"
+        >
+          相談する
+        </button>
       </section>
 
       {/* 18〜20段目：下部ナビゲーション領域 */}

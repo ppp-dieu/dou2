@@ -12,6 +12,7 @@ type QaPair = {
 };
 
 type ConsultationChatResult = {
+  initialConsultationAccepted: boolean;
   accepted: boolean;
   target: Target;
   question: string;
@@ -44,8 +45,16 @@ const responseSchema = {
         event: { type: "boolean" },
         feelings: { type: "boolean" },
         wish: { type: "boolean" },
+        initialConsultationAccepted: { type: "boolean" },
       },
-      required: ["event", "feelings", "wish"],
+      required: [
+        "initialConsultationAccepted",
+        "accepted",
+        "target",
+        "question",
+        "collected",
+        "shouldFinish",
+      ],
     },
     shouldFinish: { type: "boolean" },
   },
@@ -87,6 +96,7 @@ function isConsultationChatResult(
     ) &&
     typeof result.question === "string" &&
     typeof result.shouldFinish === "boolean" &&
+    typeof result.initialConsultationAccepted === "boolean" &&
     typeof collected === "object" &&
     collected !== null &&
     typeof (collected as Record<string, unknown>).event === "boolean" &&
@@ -277,6 +287,13 @@ export async function POST(request: Request) {
             "qaPairsがある場合は、最後のanswerが直前のquestionへの回答として成立しているかだけを判定してください。",
             "短い回答でも質問への応答として成立していればacceptedをtrueにしてください。",
             "『分からない』『覚えていない』『特にない』『どちらでもない』も有効な回答としてacceptedをtrueにしてください。",
+            "【初回相談内容の判定】",
+            "initialConsultationAcceptedは、initialConsultationからAIが相談の会話を始められる最低限の材料があるかを判定してください。",
+            "判定は厳しくしすぎないでください。",
+            "パートナーとの出来事、行動、関係上の困りごと、違和感、希望の対象のいずれかが少しでも読み取れる場合はtrueにしてください。",
+            "文章が短いこと、気持ちや理由が書かれていないことだけを理由にfalseにしてはいけません。",
+            "たとえば『LINEの返事が遅い』『最近会話が減った』『喧嘩した』『もっと会いたい』はtrueです。",
+            "『相談したい』『つらい』『どうしよう』『助けて』のように、何について相談したいのか全く特定できない場合だけfalseにしてください。",
 
             "acceptedがfalseの場合のみ、新しい論点へ進まず、直前の質問の意図を保ったまま聞き直してください。",
             "聞き直す場合も、すでに相談者が話している内容を選択肢として再確認するだけの質問にはしないでください。",
