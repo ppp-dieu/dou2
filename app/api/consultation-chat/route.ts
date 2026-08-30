@@ -27,11 +27,11 @@ type ConsultationChatResult = {
 const MAX_QA_PAIRS = 6;
 const MAX_TEXT_LENGTH = 4_000;
 
-
 const responseSchema = {
   type: "object",
   additionalProperties: false,
   properties: {
+    initialConsultationAccepted: { type: "boolean" },
     accepted: { type: "boolean" },
     target: {
       type: "string",
@@ -45,20 +45,13 @@ const responseSchema = {
         event: { type: "boolean" },
         feelings: { type: "boolean" },
         wish: { type: "boolean" },
-        initialConsultationAccepted: { type: "boolean" },
       },
-      required: [
-        "initialConsultationAccepted",
-        "accepted",
-        "target",
-        "question",
-        "collected",
-        "shouldFinish",
-      ],
+      required: ["event", "feelings", "wish"],
     },
     shouldFinish: { type: "boolean" },
   },
   required: [
+    "initialConsultationAccepted",
     "accepted",
     "target",
     "question",
@@ -90,13 +83,13 @@ function isConsultationChatResult(
   const collected = result.collected;
 
   return (
+    typeof result.initialConsultationAccepted === "boolean" &&
     typeof result.accepted === "boolean" &&
     ["event", "feelings", "wish", "clarification"].includes(
       result.target as string,
     ) &&
     typeof result.question === "string" &&
     typeof result.shouldFinish === "boolean" &&
-    typeof result.initialConsultationAccepted === "boolean" &&
     typeof collected === "object" &&
     collected !== null &&
     typeof (collected as Record<string, unknown>).event === "boolean" &&
