@@ -53,13 +53,29 @@ export async function GET(request: Request) {
   try {
     const { supabase, userId } = await getVerifiedUser(request);
 
-    const { data: couples, error: couplesError } = await supabase
-      .from("couples")
-      .select("id")
-      .or(`member_a_id.eq.${userId},member_b_id.eq.${userId}`);
+    const [
+      { data: couples, error: couplesError },
+      { data: consultationData, error: consultationsError },
+    ] = await Promise.all([
+      supabase
+        .from("couples")
+        .select("id")
+        .or(`member_a_id.eq.${userId},member_b_id.eq.${userId}`),
+      supabase
+        .from("consultations")
+        .select("id, couple_id, consultant_user_id, respondent_user_id")
+        .or(
+          `consultant_user_id.eq.${userId},respondent_user_id.eq.${userId}`,
+        ),
+    ]);
 
     if (couplesError) {
       console.error("Failed to load mitate couples", couplesError);
+      throw new ApiError("ミタテを取得できませんでした", 500);
+    }
+
+    if (consultationsError) {
+      console.error("Failed to load mitate consultations", consultationsError);
       throw new ApiError("ミタテを取得できませんでした", 500);
     }
 
@@ -68,21 +84,6 @@ export async function GET(request: Request) {
     );
 
     if (coupleIds.size === 0) return Response.json([] satisfies Mitate[]);
-
-    const { data: consultationData, error: consultationsError } =
-      await supabase
-        .from("consultations")
-        .select(
-          "id, couple_id, consultant_user_id, respondent_user_id",
-        )
-        .or(
-          `consultant_user_id.eq.${userId},respondent_user_id.eq.${userId}`,
-        );
-
-    if (consultationsError) {
-      console.error("Failed to load mitate consultations", consultationsError);
-      throw new ApiError("ミタテを取得できませんでした", 500);
-    }
 
     const consultations = (consultationData ?? []).filter((consultation) =>
       coupleIds.has(consultation.couple_id),

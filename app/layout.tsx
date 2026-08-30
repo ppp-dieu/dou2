@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Noto_Sans_JP } from "next/font/google";
+import LiffInitializer from "@/app/components/LiffInitializer";
 import "./globals.css";
 
 const notoSansJP = Noto_Sans_JP({
@@ -28,6 +29,7 @@ export default function RootLayout({
       <body
         className={`${notoSansJP.className} min-h-full flex flex-col`}
       >
+        <LiffInitializer />
         {children}
       </body>
     </html>
