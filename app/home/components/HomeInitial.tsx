@@ -348,8 +348,8 @@ export default function HomeInitial() {
         </div>
       </section>
 
-      {/* 14段目：相談するボタン */}
-      <section className="row-start-14 flex items-center justify-center">
+      {/* 13段目：相談するボタン */}
+      <section className="row-start-13 flex items-center justify-center">
         <button
           type="button"
           disabled={
