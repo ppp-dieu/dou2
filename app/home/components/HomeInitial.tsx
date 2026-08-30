@@ -326,7 +326,6 @@ export default function HomeInitial() {
               value={consultation}
               onChange={(event) => {
                 setConsultation(event.target.value);
-                setIsConsultationError(false);
               }}
               maxLength={200}
               className="block h-full min-h-0 w-full resize-none rounded-[15px] border border-[#D9E3E2] bg-white px-4 py-4 text-[16px] leading-relaxed text-[#1B3230] outline-none focus:border-[#49B8B1]"
