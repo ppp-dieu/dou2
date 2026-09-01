@@ -97,7 +97,7 @@ export default function ConsultationWaitingPage() {
       <div className="row-start-5 flex items-center justify-center">
         <p className="text-center text-[18px] font-medium text-[#1B3230]">
           {isGeneratingMitate
-            ? "ふたりの話がそろいました"
+            ? "ミタテを作成中です…"
             : "相談を送信しました"}
         </p>
       </div>
@@ -120,25 +120,17 @@ export default function ConsultationWaitingPage() {
         <p className="text-center text-[16px] leading-[1.45] text-[#1B3230]">
           {isGeneratingMitate ? (
             <>
-              douが
+              ミタテができたら
               <br />
-              ふたりの話から
-              <br />
-              ミタテを作っています…
-              <br />
-              LINEでお知らせするので
+              LINEでお知らせします。
               <br />
               画面を閉じても構いません
             </>
           ) : (
             <>
-              douが
+              ミタテができたら
               <br />
-              パートナーから
-              <br />
-              話を聞いています…
-               <br />
-              LINEでお知らせするので
+              LINEでお知らせします。
               <br />
               画面を閉じても構いません
             </>
