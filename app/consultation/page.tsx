@@ -78,9 +78,31 @@ export default function ConsultationPage() {
   const [isSavingAnswers, setIsSavingAnswers] = useState(false);
   const [isRespondent, setIsRespondent] = useState(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
   const chatScrollRef = useRef<HTMLElement>(null);
   const [attemptCount, setAttemptCount] = useState(0);
   const [showRetryButton, setShowRetryButton] = useState(false);
+  useEffect(() => {
+    const viewport = window.visualViewport;
+
+    if (!viewport) {
+      return;
+    }
+
+    const updateViewportHeight = () => {
+      setViewportHeight(viewport.height);
+    };
+
+    updateViewportHeight();
+
+    viewport.addEventListener("resize", updateViewportHeight);
+    viewport.addEventListener("scroll", updateViewportHeight);
+
+    return () => {
+      viewport.removeEventListener("resize", updateViewportHeight);
+      viewport.removeEventListener("scroll", updateViewportHeight);
+    };
+  }, []);
 
   const handleReturnHome = () => {
     sessionStorage.removeItem("consultationInput");
@@ -484,7 +506,12 @@ export default function ConsultationPage() {
   return (
 
 
-    <main className="flex h-dvh flex-col ">
+    <main
+      className="flex flex-col overflow-hidden"
+      style={{
+        height: viewportHeight ? `${viewportHeight}px` : "100dvh",
+      }}
+    >
       {/* ヘッダー */}
       <header className="shrink-0 border-b border-gray-300 bg-[#49B8B1]">
         <div className="mx-auto grid w-full max-w-md grid-cols-[40px_1fr_40px] items-center px-5 py-4">
@@ -595,21 +622,6 @@ export default function ConsultationPage() {
           <textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
-            onFocus={() => {
-              const scrollTop = chatScrollRef.current?.scrollTop ?? 0;
-
-              requestAnimationFrame(() => {
-                if (chatScrollRef.current) {
-                  chatScrollRef.current.scrollTop = scrollTop;
-                }
-              });
-
-              window.setTimeout(() => {
-                if (chatScrollRef.current) {
-                  chatScrollRef.current.scrollTop = scrollTop;
-                }
-              }, 100);
-            }}
             disabled={!showAiMessage || isAiResponding || isCompleted}
             placeholder="メッセージを入力"
             rows={1}

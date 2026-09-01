@@ -395,7 +395,11 @@ export async function POST(request: Request) {
           "相手の心理や意図の推測、人格評価、心理・医学的診断、善悪・責任の判定、説教、脅し、関係改善の強制は禁止です。",
           "『本当は』『〜すべき』など、入力を超えて断定する表現は禁止です。",
           "出力する全項目は空文字にせず、自然で読みやすい日本語にしてください。",
+          "titleは15文字以内にしてください。",
           "eventSummaryは120文字以内にしてください。",
+          "consultantFeelingsとrespondentFeelingsは、それぞれ必ず1件だけ作成してください。",
+          "各feelingのlabelは6文字以内にしてください。",
+          "各feelingのdescriptionは35文字以内にしてください。",
           "各suggestionのtitleは15文字以内にしてください。",
           "各suggestionのdescriptionは69文字以内にしてください。",
         ].join("\n"),
@@ -452,7 +456,9 @@ export async function POST(request: Request) {
     }
 
     if (!isGeneratedMitate(parsedResult)) {
-      console.error("OpenAI mitate response did not match validation");
+      console.error("OpenAI mitate response did not match validation", {
+        parsedResult,
+      });
       throw new ApiError("ミタテを生成できませんでした", 502);
     }
 
