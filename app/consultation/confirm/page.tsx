@@ -258,7 +258,7 @@ export default function ConsultationConfirmPage() {
                 </section>
 
                 {/* 3〜6：起こったこと 70字 */}
-                <section className="row-start-3 row-end-7 min-h-0 min-w-0">
+                <section className="row-start-3 row-end-6 min-h-0 min-w-0">
                     <div className="pt-2 flex h-full flex-col">
                         <h2 className="shrink-0 text-[14px] text-[#2F5954]">
                             起こったこと
@@ -336,7 +336,7 @@ export default function ConsultationConfirmPage() {
                 </section>
 
                 {/* 7〜11：あなたの気持ち */}
-                <section className="row-start-7 row-end-12 min-h-0 min-w-0">
+                <section className="row-start-8 row-end-11 min-h-0 min-w-0">
                     <div className="flex h-full flex-col pt-2">
                         <h2 className="shrink-0 text-[14px] text-[#2F5954]">
                             あなたの気持ち
@@ -414,7 +414,7 @@ export default function ConsultationConfirmPage() {
                 </section>
 
                 {/* 12〜14：望み 38字*/}
-                <section className="row-start-12 row-end-15 min-h-0 min-w-0">
+                <section className="row-start-11 row-end-15 min-h-0 min-w-0">
                     <div className="flex h-full flex-col pt-2">
                         <h2 className="shrink-0 text-[14px] text-[#2F5954]">
                             これから

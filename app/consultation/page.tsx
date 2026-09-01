@@ -44,16 +44,38 @@ function formatRespondentConsultation(result: ConsultantResult) {
 }
 
 export default function ConsultationPage() {
+  const initialConsultation =
+    typeof window !== "undefined"
+      ? sessionStorage.getItem("consultationInput") ?? ""
+      : "";
+
+  const initialQuestion =
+    typeof window !== "undefined"
+      ? sessionStorage.getItem("initialConsultationQuestion") ?? ""
+      : "";
+
   const [message, setMessage] = useState("");
-  const [consultation, setConsultation] = useState("");
-  const [showAiMessage, setShowAiMessage] = useState(false);
+  const [consultation] = useState(initialConsultation);
+  const [showAiMessage, setShowAiMessage] = useState(
+    initialQuestion.length > 0,
+  );
   const router = useRouter();
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
 
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(
+    initialQuestion
+      ? [
+          {
+            id: "ai-initial",
+            sender: "ai",
+            text: initialQuestion,
+          },
+        ]
+      : [],
+  );
   const [answers, setAnswers] = useState<ConsultationAnswer[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState("");
+  const [currentQuestion, setCurrentQuestion] = useState(initialQuestion);
   const [isAiResponding, setIsAiResponding] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [showNextButton, setShowNextButton] = useState(false);
@@ -189,83 +211,15 @@ export default function ConsultationPage() {
       router.replace("/home");
       return;
     }
-    let cancelled = false;
 
-    const loadInitialQuestion = async () => {
-      setIsAiResponding(true);
+    const initialQuestion = sessionStorage.getItem(
+      "initialConsultationQuestion",
+    );
 
-      try {
-        const authHeaders = getApiAuthHeaders();
-
-        if (!authHeaders) {
-          throw new Error("LINEのログイン情報を取得できませんでした");
-        }
-
-        const response = await fetch("/api/consultation-chat", {
-          method: "POST",
-          cache: "no-store",
-          headers: {
-            ...authHeaders,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            consultationId,
-            initialConsultation: savedConsultation,
-            qaPairs: [],
-            currentQuestionCount: 0,
-          }),
-        });
-        const data = (await response.json().catch(() => null)) as {
-          accepted?: boolean;
-          question?: string;
-          error?: string;
-        } | null;
-
-        if (!response.ok || !data?.question) {
-          throw new Error(data?.error ?? "最初の質問を取得できませんでした");
-        }
-
-        const initialQuestion = data.question;
-
-        if (cancelled) {
-          return;
-        }
-
-        setConsultation(savedConsultation);
-        setCurrentQuestion(initialQuestion);
-
-        setShowAiMessage(true);
-        setChatMessages([
-          {
-            id: `ai-0-${Date.now()}`,
-            sender: "ai",
-            text: initialQuestion,
-          },
-        ]);
-
-        setIsAiResponding(false);
-
-      } catch (error) {
-        if (cancelled) {
-          return;
-        }
-
-        console.error("Failed to load initial consultation question", error);
-        window.alert(
-          error instanceof Error
-            ? error.message
-            : "最初の質問を取得できませんでした",
-        );
-        router.replace("/home");
-      }
-    };
-
-    void loadInitialQuestion();
-
-    return () => {
-      cancelled = true;
-
-    };
+    if (!initialQuestion) {
+      router.replace("/home");
+      return;
+    }
   }, [router]);
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({

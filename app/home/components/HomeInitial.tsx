@@ -306,7 +306,7 @@ export default function HomeInitial() {
 
       {/* 7段目：説明文 */}
       <section className="row-start-7 flex items-center justify-center text-center">
-        <p>相談したいことを入力してください</p>
+        <p>パートナーについて<br />相談したいことを入力してください</p>
       </section>
 
       {/* 8〜15段目：入力エリア */}
