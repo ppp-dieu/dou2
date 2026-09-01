@@ -250,15 +250,15 @@ export default function ConsultationConfirmPage() {
     return (
         <main className="h-dvh overflow-hidden">
             <div className="mx-auto grid h-full w-full max-w-md grid-rows-20 px-5">
-                {/* 2：タイトル */}
+                {/* 3：タイトル */}
                 <section className="row-start-2 row-end-3 flex items-center justify-center">
                     <h1 className="text-center text-[18px] font-medium text-[#2F5954]">
                         あなたのお話を整理しました
                     </h1>
                 </section>
 
-                {/* 3〜6：起こったこと 70字 */}
-                <section className="row-start-3 row-end-6 min-h-0 min-w-0">
+                {/* 5〜7：起こったこと 70字 */}
+                <section className="row-start-4 row-end-8 min-h-0 min-w-0">
                     <div className="pt-2 flex h-full flex-col">
                         <h2 className="shrink-0 text-[14px] text-[#2F5954]">
                             起こったこと
@@ -335,8 +335,8 @@ export default function ConsultationConfirmPage() {
                     </div>
                 </section>
 
-                {/* 6〜10：あなたの気持ち */}
-                <section className="row-start-6 row-end-10 min-h-0 min-w-0">
+                {/* 8〜10：あなたの気持ち */}
+                <section className="row-start-8 row-end-12 min-h-0 min-w-0">
                     <div className="flex h-full flex-col pt-2">
                         <h2 className="shrink-0 text-[14px] text-[#2F5954]">
                             あなたの気持ち
@@ -413,8 +413,8 @@ export default function ConsultationConfirmPage() {
                     </div>
                 </section>
 
-                {/* 11〜14：望み 38字*/}
-                <section className="row-start-11 row-end-14 min-h-0 min-w-0">
+                {/* 11〜13：望み 38字*/}
+                <section className="row-start-12 row-end-16 min-h-0 min-w-0">
                     <div className="flex h-full flex-col pt-2">
                         <h2 className="shrink-0 text-[14px] text-[#2F5954]">
                             これから
@@ -492,12 +492,12 @@ export default function ConsultationConfirmPage() {
                 </section>
 
                 {/* 15〜18：注意文 + ボタン */}
-                <section className="row-start-15 row-end-19 min-h-0 overflow-hidden">
-                    <div className="flex h-full min-h-0 flex-col justify-center pt-6">
+                <section className="row-start-16 row-end-20 min-h-0 overflow-hidden">
+                    <div className="flex h-full min-h-0 flex-col justify-center">
 
                         {/* 注意文 + 進めるボタン */}
                         <div className="flex flex-col ">
-                            <p className="text-center text-[12px] leading-4 text-[#536462]">
+                            <p className="mt-2 text-center text-[12px] leading-4 text-[#536462]">
                                 {consultationRole === "respondent"
                                     ? "この内容を元にミタテを作成します"
                                     : "この内容をもとにdouがパートナーに質問を開始します"}
@@ -507,7 +507,7 @@ export default function ConsultationConfirmPage() {
                                 type="button"
                                 onClick={() => void handleSaveResult()}
                                 disabled={isSavingResult || isResultSaved}
-                                className="h-11 w-full rounded-full bg-[#49B8B1] text-[16px] font-medium text-white active:opacity-80 disabled:opacity-40"
+                                className="mt-2 h-11 w-full rounded-full bg-[#49B8B1] text-[16px] font-medium text-white active:opacity-80 disabled:opacity-40"
                             >
                                 {isSavingResult
                                     ? "保存中..."
@@ -521,7 +521,7 @@ export default function ConsultationConfirmPage() {
                         <button
                             type="button"
                             onClick={() => setIsRestartModalOpen(true)}
-                            className="mx-auto mt-2 h-10 w-70 rounded-full border border-[#49B8B1] bg-white text-[14px] text-[#49B8B1] active:opacity-60"
+                            className="mx-auto mt-4 h-10 w-70 rounded-full border border-[#49B8B1] bg-white text-[14px] text-[#49B8B1] active:opacity-60"
                         >
                             チャットをやり直す
                         </button>
