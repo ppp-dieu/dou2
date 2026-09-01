@@ -60,6 +60,7 @@ export async function GET(request: Request) {
       supabase
         .from("couples")
         .select("id")
+        .eq("status", "connected")
         .or(`member_a_id.eq.${userId},member_b_id.eq.${userId}`),
       supabase
         .from("consultations")
