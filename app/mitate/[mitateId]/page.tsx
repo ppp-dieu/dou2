@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { getApiAuthHeaders, initializeLiff } from "@/lib/liff";
 import MitateCard from "../components/MitateCard";
 import type { Mitate } from "../types";
+import LoadingScreen from "@/app/components/LoadingScreen";
 
 export default function MitateDetailPage() {
   const { mitateId } = useParams<{ mitateId: string }>();
@@ -87,6 +88,9 @@ export default function MitateDetailPage() {
       return next;
     });
   };
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <main className="grid h-dvh grid-rows-20 bg-[#E7FBFB] px-4">
@@ -98,11 +102,6 @@ export default function MitateDetailPage() {
 
       <section className="row-start-3 row-end-21 overflow-y-auto pb-6 pt-2">
         <div className="mx-auto flex w-full max-w-md flex-col gap-3">
-          {isLoading && (
-            <p className="text-center text-[13px] text-[#7A8C8A]">
-              読み込み中...
-            </p>
-          )}
 
           {error && (
             <p
