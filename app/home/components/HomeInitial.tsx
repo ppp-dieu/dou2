@@ -310,7 +310,7 @@ export default function HomeInitial() {
       </section>
 
       {/* 8〜15段目：入力エリア */}
-      <section className="row-start-8 row-end-13 min-h-0">
+      <section className="row-start-9 row-end-14 min-h-0">
         <div className="mx-auto grid h-full min-h-0 w-full max-w-sm grid-rows-[minmax(0,1fr)_auto]">
           <div className="relative min-h-0">
             {consultation.length === 0 && (
@@ -349,7 +349,7 @@ export default function HomeInitial() {
       </section>
 
       {/* 13段目：相談するボタン */}
-      <section className="row-start-13 flex items-center justify-center">
+      <section className="row-start-15 flex items-center justify-center">
         <button
           type="button"
           disabled={

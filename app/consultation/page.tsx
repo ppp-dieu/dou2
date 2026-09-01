@@ -23,10 +23,6 @@ type ConsultantResult = {
 };
 
 const AI_MESSAGES = [
-  "相談ありがとうございます。\nまず、今回の出来事について詳しく教えてください。",
-  "教えていただきありがとうございます。\nそのとき、どのように感じましたか？",
-  "そのように感じたのですね。\nそう感じた理由を教えてください。",
-  "ここまでのお話を踏まえて、パートナーにどうしてほしいですか？",
   "ありがとうございます。\nお話しいただいた内容を受け取りました。",
   "それでは、これまでのお話をもとにお気持ちをまとめます。",
 ];
@@ -356,7 +352,7 @@ export default function ConsultationPage() {
           {
             id: `ai-complete-${Date.now()}`,
             sender: "ai",
-            text: AI_MESSAGES[4],
+            text: AI_MESSAGES[0],
           },
         ]);
 
@@ -368,7 +364,7 @@ export default function ConsultationPage() {
             {
               id: `ai-summary-${Date.now()}`,
               sender: "ai",
-              text: AI_MESSAGES[5],
+              text: AI_MESSAGES[1],
             },
           ]);
 

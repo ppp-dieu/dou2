@@ -55,6 +55,9 @@ export default function PartnerPage() {
   const [codeError, setCodeError] = useState(false);
   const [joining, setJoining] = useState(false);
   const [joinMessage, setJoinMessage] = useState<string | null>(null);
+  const [unlinking, setUnlinking] = useState(false);
+  const [unlinkMessage, setUnlinkMessage] = useState<string | null>(null);
+  const [showUnlinkModal, setShowUnlinkModal] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -170,6 +173,35 @@ export default function PartnerPage() {
     }
   };
 
+  const handleUnlink = async () => {
+    try {
+      setUnlinking(true);
+      setUnlinkMessage(null);
+
+      await partnerRequest("/api/partner", {
+        method: "DELETE",
+      });
+
+      setShowUnlinkModal(false);
+      setPartnerState("unlinked");
+
+      const invite = await partnerRequest<InviteResponse>(
+        "/api/partner/invite",
+        { method: "POST" },
+      );
+
+      setInviteCode(invite.couple.invite_code);
+    } catch (error) {
+      console.error("Failed to unlink partner", error);
+
+      setUnlinkMessage(
+        error instanceof Error ? error.message : "連携解除に失敗しました",
+      );
+    } finally {
+      setUnlinking(false);
+    }
+  };
+
   if (partnerState === "checking") {
     return <LoadingScreen />;
   }
@@ -188,7 +220,7 @@ export default function PartnerPage() {
         <section className="row-start-14 row-end-19 flex flex-col justify-center gap-3">
           <button
             type="button"
-            disabled
+            onClick={() => setShowUnlinkModal(true)}
             className="h-12 w-full rounded-full bg-[#F7937D] text-[18px] font-medium text-white"
           >
             連携解除する
@@ -202,6 +234,46 @@ export default function PartnerPage() {
             ホームへ戻る
           </button>
         </section>
+
+        {showUnlinkModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-6">
+            <div className="w-full max-w-[360px] rounded-[20px] bg-white px-6 py-7 shadow-lg">
+              <h3 className="text-center text-[18px] font-medium text-[#1B3230]">
+                パートナー連携を解除しますか？
+              </h3>
+
+              <p className="mt-3 text-center text-[14px] leading-relaxed text-[#2F5955]">
+                これまでのミタテが削除されます。
+              </p>
+
+              <div className="mt-7 flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={handleUnlink}
+                  disabled={unlinking}
+                  className="h-12 w-full rounded-full bg-[#F7937D] text-[16px] font-medium text-white disabled:opacity-40"
+                >
+                  {unlinking ? "解除中..." : "連携解除する"}
+                </button>
+
+                {unlinkMessage && (
+                  <p className="text-center text-[13px] text-red-500">
+                    {unlinkMessage}
+                  </p>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setShowUnlinkModal(false)}
+                  disabled={unlinking}
+                  className="h-12 w-full rounded-full border border-[#49B8B1] bg-white text-[16px] font-medium text-[#49B8B1] disabled:opacity-40"
+                >
+                  キャンセル
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     );
   }
@@ -227,15 +299,6 @@ export default function PartnerPage() {
           </p>
 
           <div className="mt-10 grid grid-cols-2 gap-4">
-            <button
-              type="button"
-              disabled={!inviteCode}
-              onClick={handleCopy}
-              className="h-12 rounded-[10px] border border-[#8FD4D0] bg-white text-[16px] font-medium text-[#49B8B1] disabled:opacity-40"
-            >
-              {copied ? "コピーしました" : "コピー"}
-            </button>
-
             <button
               type="button"
               disabled={!inviteCode}
