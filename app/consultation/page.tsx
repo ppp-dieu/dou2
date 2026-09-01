@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getApiAuthHeaders } from "@/lib/liff";
+import LoadingScreen from "@/app/components/LoadingScreen";
 
 type ChatMessage = {
   id: string;
@@ -51,6 +52,7 @@ export default function ConsultationPage() {
       : "";
 
   const [message, setMessage] = useState("");
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [consultation] = useState(initialConsultation);
   const [showAiMessage, setShowAiMessage] = useState(
     initialQuestion.length > 0,
@@ -82,25 +84,33 @@ export default function ConsultationPage() {
   const chatScrollRef = useRef<HTMLElement>(null);
   const [attemptCount, setAttemptCount] = useState(0);
   const [showRetryButton, setShowRetryButton] = useState(false);
-  useEffect(() => {
-    const viewport = window.visualViewport;
+  const [isRespondentInitialLoading, setIsRespondentInitialLoading] =
+    useState(false);
 
-    if (!viewport) {
+  useEffect(() => {
+    const visualViewport = window.visualViewport;
+
+    if (!visualViewport) {
       return;
     }
 
-    const updateViewportHeight = () => {
-      setViewportHeight(viewport.height);
+    const updateKeyboardHeight = () => {
+      const height =
+        window.innerHeight -
+        visualViewport.height -
+        visualViewport.offsetTop;
+
+      setKeyboardHeight(Math.max(0, height));
     };
 
-    updateViewportHeight();
+    updateKeyboardHeight();
 
-    viewport.addEventListener("resize", updateViewportHeight);
-    viewport.addEventListener("scroll", updateViewportHeight);
+    visualViewport.addEventListener("resize", updateKeyboardHeight);
+    visualViewport.addEventListener("scroll", updateKeyboardHeight);
 
     return () => {
-      viewport.removeEventListener("resize", updateViewportHeight);
-      viewport.removeEventListener("scroll", updateViewportHeight);
+      visualViewport.removeEventListener("resize", updateKeyboardHeight);
+      visualViewport.removeEventListener("scroll", updateKeyboardHeight);
     };
   }, []);
 
@@ -123,7 +133,8 @@ export default function ConsultationPage() {
       let cancelled = false;
 
       const loadConsultantResult = async () => {
-        setIsAiResponding(true);
+        setIsRespondentInitialLoading(true);
+
         try {
           const authHeaders = getApiAuthHeaders();
 
@@ -190,6 +201,7 @@ export default function ConsultationPage() {
           setIsRespondent(true);
           setCurrentQuestion(initialQuestion);
           setShowAiMessage(true);
+          setIsRespondentInitialLoading(false);
           setChatMessages([
             {
               id: "respondent-consultation-result",
@@ -207,6 +219,10 @@ export default function ConsultationPage() {
           if (cancelled) {
             return;
           }
+
+          setIsRespondentInitialLoading(false);
+
+          console.error("Failed to load consultant result", error);
 
           console.error("Failed to load consultant result", error);
           window.alert(
@@ -502,16 +518,15 @@ export default function ConsultationPage() {
       setIsSavingAnswers(false);
     }
   };
+  if (isRespondentInitialLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
 
 
-    <main
-      className="flex flex-col overflow-hidden"
-      style={{
-        height: viewportHeight ? `${viewportHeight}px` : "100dvh",
-      }}
-    >
+    <main className="flex h-dvh flex-col">
+
       {/* ヘッダー */}
       <header className="shrink-0 border-b border-gray-300 bg-[#49B8B1]">
         <div className="mx-auto grid w-full max-w-md grid-cols-[40px_1fr_40px] items-center px-5 py-4">
@@ -617,7 +632,12 @@ export default function ConsultationPage() {
       </section>
 
       {/* 入力エリア */}
-      <footer className="shrink-0 border-t border-[#E5E5E5] bg-white px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3">
+      <footer
+        className="shrink-0 border-t border-[#E5E5E5] bg-white px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3"
+        style={{
+          transform: `translateY(-${keyboardHeight}px)`,
+        }}
+      >
         <div className="mx-auto flex w-full max-w-md items-end gap-3">
           <textarea
             value={message}

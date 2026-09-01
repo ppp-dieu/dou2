@@ -9,11 +9,19 @@ import {
   getVerifiedUser,
 } from "@/lib/server/line-user";
 
+type UserRow = {
+  id: string;
+  display_name: string;
+  picture_url: string | null;
+};
+
 type ConsultationRow = {
   id: string;
   couple_id: string;
   consultant_user_id: string;
   respondent_user_id: string;
+  consultant: UserRow | null;
+  respondent: UserRow | null;
 };
 
 type MitateRow = {
@@ -26,12 +34,7 @@ type MitateRow = {
   respondent_states: unknown;
   suggestions: unknown;
   created_at: string;
-};
-
-type UserRow = {
-  id: string;
-  display_name: string;
-  picture_url: string | null;
+  consultation: ConsultationRow;
 };
 
 const tokyoDateFormatter = new Intl.DateTimeFormat("en-CA", {
@@ -55,7 +58,7 @@ export async function GET(request: Request) {
 
     const [
       { data: couples, error: couplesError },
-      { data: consultationData, error: consultationsError },
+      { data: mitateData, error: mitatesError },
     ] = await Promise.all([
       supabase
         .from("couples")
@@ -63,11 +66,42 @@ export async function GET(request: Request) {
         .eq("status", "connected")
         .or(`member_a_id.eq.${userId},member_b_id.eq.${userId}`),
       supabase
-        .from("consultations")
-        .select("id, couple_id, consultant_user_id, respondent_user_id")
+        .from("mitates")
+        .select(
+          `
+            id,
+            couple_id,
+            consultation_id,
+            title,
+            event_summary,
+            consultant_states,
+            respondent_states,
+            suggestions,
+            created_at,
+            consultation:consultations!inner(
+              id,
+              couple_id,
+              consultant_user_id,
+              respondent_user_id,
+              consultant:users!consultations_consultant_user_id_fkey(
+                id,
+                display_name,
+                picture_url
+              ),
+              respondent:users!consultations_respondent_user_id_fkey(
+                id,
+                display_name,
+                picture_url
+              )
+            )
+          `,
+        )
         .or(
           `consultant_user_id.eq.${userId},respondent_user_id.eq.${userId}`,
-        ),
+          { referencedTable: "consultation" },
+        )
+        .order("created_at", { ascending: false })
+        .overrideTypes<MitateRow[], { merge: false }>(),
     ]);
 
     if (couplesError) {
@@ -75,8 +109,8 @@ export async function GET(request: Request) {
       throw new ApiError("ミタテを取得できませんでした", 500);
     }
 
-    if (consultationsError) {
-      console.error("Failed to load mitate consultations", consultationsError);
+    if (mitatesError) {
+      console.error("Failed to load mitates", mitatesError);
       throw new ApiError("ミタテを取得できませんでした", 500);
     }
 
@@ -86,66 +120,20 @@ export async function GET(request: Request) {
 
     if (coupleIds.size === 0) return Response.json([] satisfies Mitate[]);
 
-    const consultations = (consultationData ?? []).filter((consultation) =>
-      coupleIds.has(consultation.couple_id),
-    ) as ConsultationRow[];
-
-    if (consultations.length === 0) {
-      return Response.json([] satisfies Mitate[]);
-    }
-
-    const consultationById = new Map(
-      consultations.map((consultation) => [consultation.id, consultation]),
-    );
-    const { data: mitateData, error: mitatesError } = await supabase
-      .from("mitates")
-      .select(
-        "id, couple_id, consultation_id, title, event_summary, consultant_states, respondent_states, suggestions, created_at",
-      )
-      .in("consultation_id", [...consultationById.keys()])
-      .order("created_at", { ascending: false });
-
-    if (mitatesError) {
-      console.error("Failed to load mitates", mitatesError);
-      throw new ApiError("ミタテを取得できませんでした", 500);
-    }
-
     const mitates = (mitateData ?? []).filter((mitate) => {
-      const consultation = consultationById.get(mitate.consultation_id);
-      return consultation?.couple_id === mitate.couple_id;
-    }) as MitateRow[];
+      const consultation = mitate.consultation;
+      return (
+        coupleIds.has(mitate.couple_id) &&
+        consultation.couple_id === mitate.couple_id &&
+        (consultation.consultant_user_id === userId ||
+          consultation.respondent_user_id === userId)
+      );
+    });
 
     if (mitates.length === 0) return Response.json([] satisfies Mitate[]);
 
-    const profileIds = [
-      ...new Set(
-        mitates.flatMap((mitate) => {
-          const consultation = consultationById.get(mitate.consultation_id)!;
-          return [
-            consultation.consultant_user_id,
-            consultation.respondent_user_id,
-          ];
-        }),
-      ),
-    ];
-    const { data: userData, error: usersError } = await supabase
-      .from("users")
-      .select("id, display_name, picture_url")
-      .in("id", profileIds);
-
-    if (usersError) {
-      console.error("Failed to load mitate users", usersError);
-      throw new ApiError("ミタテを取得できませんでした", 500);
-    }
-
-    const usersById = new Map(
-      ((userData ?? []) as UserRow[]).map((user) => [user.id, user]),
-    );
-
     const response = mitates.map((mitate): Mitate => {
-      const consultation = consultationById.get(mitate.consultation_id)!;
-      const consultant = usersById.get(consultation.consultant_user_id);
-      const respondent = usersById.get(consultation.respondent_user_id);
+      const { consultant, respondent } = mitate.consultation;
 
       if (!consultant || !respondent) {
         throw new ApiError("ミタテを取得できませんでした", 500);
