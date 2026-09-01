@@ -61,12 +61,12 @@ export default function ConsultationPage() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(
     initialQuestion
       ? [
-          {
-            id: "ai-initial",
-            sender: "ai",
-            text: initialQuestion,
-          },
-        ]
+        {
+          id: "ai-initial",
+          sender: "ai",
+          text: initialQuestion,
+        },
+      ]
       : [],
   );
   const [answers, setAnswers] = useState<ConsultationAnswer[]>([]);
@@ -78,6 +78,7 @@ export default function ConsultationPage() {
   const [isSavingAnswers, setIsSavingAnswers] = useState(false);
   const [isRespondent, setIsRespondent] = useState(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
+  const chatScrollRef = useRef<HTMLElement>(null);
   const [attemptCount, setAttemptCount] = useState(0);
   const [showRetryButton, setShowRetryButton] = useState(false);
 
@@ -518,7 +519,10 @@ export default function ConsultationPage() {
       </header>
 
       {/* チャットエリア */}
-      <section className="flex-1 overflow-y-auto px-5 py-6">
+      <section
+        ref={chatScrollRef}
+        className="flex-1 overflow-y-auto px-5 py-6"
+      >
         <div className="mx-auto flex w-full max-w-md flex-col gap-5">
           {consultation && (
             <div className="self-end max-w-[85%] rounded-2xl border border-gray-300 bg-white px-4 py-3 text-[15px] leading-6 text-[#1B3230]">
@@ -591,6 +595,21 @@ export default function ConsultationPage() {
           <textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
+            onFocus={() => {
+              const scrollTop = chatScrollRef.current?.scrollTop ?? 0;
+
+              requestAnimationFrame(() => {
+                if (chatScrollRef.current) {
+                  chatScrollRef.current.scrollTop = scrollTop;
+                }
+              });
+
+              window.setTimeout(() => {
+                if (chatScrollRef.current) {
+                  chatScrollRef.current.scrollTop = scrollTop;
+                }
+              }, 100);
+            }}
             disabled={!showAiMessage || isAiResponding || isCompleted}
             placeholder="メッセージを入力"
             rows={1}

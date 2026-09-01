@@ -302,13 +302,22 @@ export default function PartnerPage() {
             <button
               type="button"
               disabled={!inviteCode}
+              onClick={handleCopy}
+              className="h-12 rounded-[10px] border border-[#8FD4D0] bg-white text-[16px] font-medium text-[#49B8B1] disabled:opacity-40"
+            >
+              {copied ? "コピーしました" : "コピー"}
+            </button>
+
+            <button
+              type="button"
+              disabled={!inviteCode}
               onClick={handleShare}
               className="h-12 rounded-[10px] border border-[#8FD4D0] bg-white text-[16px] font-medium text-[#49B8B1] disabled:opacity-40"
             >
               共有
             </button>
           </div>
-        </div>
+          </div>
       </section>
 
       <section className="row-start-13 row-end-16 flex flex-col justify-center">

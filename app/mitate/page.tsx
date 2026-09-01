@@ -82,29 +82,43 @@ export default function MitatePage() {
     <main className="grid h-dvh grid-rows-20 bg-[#E7FBFB] px-4">
       <div className="row-start-2 flex items-center justify-center">
         <h1 className="text-[18px] font-bold text-[#49B8B1]">
-          ミタテ
+          ミタテ一覧
         </h1>
       </div>
+      {mitates.length === 0 ? (
+        <div className="row-start-3 row-end-8 flex items-center justify-center px-6">
+          <div className="text-center">
+            <h2 className="text-[14px] font-medium text-[#1B3230]">
+              まだミタテはありません
+            </h2>
 
-      <section className="row-start-3 row-end-21 overflow-y-auto pb-6 pt-2">
-        <div className="mx-auto flex w-full max-w-md flex-col gap-3">
-    
-          {error && (
-            <p className="text-center text-[13px] text-[#1B3230]">
-              {error}
+            <p className="mt-2 text-[14px] leading-relaxed text-[#2F5955]">
+              パートナーとの相談が完了すると、
+              <br />
+              ここにミタテが表示されます。
             </p>
-          )}
-
-          {mitates.map((mitate) => (
-            <MitateCard
-              key={mitate.id}
-              mitate={mitate}
-              isOpen={openIds.has(mitate.id)}
-              onToggle={() => toggleMitate(mitate.id)}
-            />
-          ))}
+          </div>
         </div>
-      </section>
+      ) : (
+        <section className="row-start-3 row-end-21 overflow-y-auto pb-6 pt-2">
+          <div className="mx-auto flex w-full max-w-md flex-col gap-3">
+            {error && (
+              <p className="text-center text-[13px] text-[#1B3230]">
+                {error}
+              </p>
+            )}
+
+            {mitates.map((mitate) => (
+              <MitateCard
+                key={mitate.id}
+                mitate={mitate}
+                isOpen={openIds.has(mitate.id)}
+                onToggle={() => toggleMitate(mitate.id)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
     </main>
   );
 }
